@@ -1,116 +1,101 @@
 # FinOps Watchdog
 
-**FinOps Watchdog v0.1 is a small CSV-in, anomalies-out CLI.**
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Multi-cloud](https://img.shields.io/badge/cloud-AWS%20%7C%20Azure%20%7C%20GCP-orange)](https://github.com/cloudandcapital/finops-watchdog)
 
-It reads a local cost time-series CSV, detects spend spikes against a trailing baseline, and emits deterministic machine-readable output.
+**Baseline-aware cost anomaly detection — surface economically meaningful spend spikes from any billing CSV.**
 
-## What v0.1 Is
+Part of the [Cloud & Capital](https://github.com/cloudandcapital) FinOps pipeline.  
+Anomaly output feeds into [Cloud Cost Guard](https://github.com/cloudandcapital/cloud-cost-guard) — the unified FinOps dashboard.
 
-- One command: `detect`
-- One job: read CSV input and return anomaly findings
-- Stable output contract: `json`, `yaml`, or `csv`
-- Explicit exit codes for automation
+---
 
-## What v0.1 Is Not
+**Features:**
+- One command: `detect` — reads a cost CSV, returns anomalies
+- Baseline-aware: rolling median + MAD (median absolute deviation) to minimize false positives
+- Configurable threshold and minimum delta to suppress billing noise
+- Machine-readable output: JSON, YAML, or CSV — pipe-friendly with exit codes
+- Works with any cost CSV — AWS Cost Explorer, Azure exports, GCP billing, or FOCUS 2026
+- Markdown report mode for async sharing
 
-- No cloud API collection
-- No Slack/Teams/email alerts
-- No scheduler/daemon behavior
-- No dashboards or UI
+---
 
 ## Install
 
 ```bash
-pip install -e .
+pip install "git+https://github.com/cloudandcapital/finops-watchdog.git"
+# or
+pipx install .
 ```
 
-## CLI Usage
+---
+
+## Usage
 
 ```bash
-finops-watchdog detect \
-  --input cost.csv \
-  --time-column date \
-  --value-column amount \
-  --group-by SERVICE \
-  --window 30d \
-  --threshold 3.0 \
-  --min-amount 0 \
-  --output-format json
+# Detect anomalies with default threshold (15% above baseline)
+finops-watchdog detect --input costs.csv
+
+# Tighter threshold (flag anything 10%+ above baseline)
+finops-watchdog detect --input costs.csv --threshold 0.10
+
+# JSON output for downstream tools
+finops-watchdog detect --input costs.csv --format json
+
+# Generate a Markdown anomaly report
+finops-watchdog detect --input costs.csv --report
+
+# YAML output
+finops-watchdog detect --input costs.csv --format yaml
 ```
 
-### Flags
+**Exit codes:**
+- `0` — no anomalies above threshold
+- `1` — one or more anomalies detected
+- `2` — input error (bad file, missing column)
 
-Required:
+---
 
-- `--input` path to CSV file
-- `--time-column` timestamp column name
-- `--value-column` numeric cost column name
-- `--group-by` grouping column name
-- `--output-format` one of `json`, `yaml`, `csv`
+## Input CSV Format
 
-Optional:
+Watchdog expects a cost time-series CSV with at minimum:
 
-- `--window` lookback window in days (`30d` default)
-- `--threshold` anomaly threshold in standard deviations above baseline (`3.0` default)
-- `--min-amount` ignore anomalies below this absolute delta (`0.0` default)
+| Column | Description |
+|--------|-------------|
+| `date` | ISO date (YYYY-MM-DD) |
+| `service` or `group` | Service or cost grouping name |
+| `cost` | Daily cost amount (numeric) |
 
-## JSON Output Contract (v1.0)
+FOCUS 2026 exports (`ChargePeriodStart`, `ServiceName`, `BilledCost`) are automatically mapped.
 
-```json
-{
-  "schema_version": "1.0",
-  "metadata": {
-    "generated_at": "2026-02-04T12:00:00Z",
-    "input_file": "cost.csv",
-    "window": "30d",
-    "threshold": 3.0,
-    "group_by": "SERVICE"
-  },
-  "summary": {
-    "total_anomalies": 1,
-    "groups_impacted": 1,
-    "max_delta_pct": 186.5
-  },
-  "anomalies": [
-    {
-      "timestamp": "2026-01-27T00:00:00Z",
-      "group": "AmazonEC2",
-      "baseline": 120.5,
-      "current": 345.2,
-      "delta": 224.7,
-      "delta_pct": 186.5,
-      "severity": "high",
-      "anomaly_type": "spend_above_threshold"
-    }
-  ]
-}
-```
+---
 
-Notes:
+## How It Works
 
-- `generated_at` and anomaly `timestamp` are UTC ISO-8601.
-- `delta_pct` is signed.
-- Output is always emitted, including zero-anomaly runs (`total_anomalies: 0`, `anomalies: []`).
-- In machine-readable modes (`json`, `yaml`, `csv`), stdout contains only the payload.
+Watchdog uses a **rolling baseline** approach:
+1. Build a baseline window (default: trailing 30 days before the detection window)
+2. Compute per-service **median** and **MAD** (robust to billing outliers)
+3. Flag any service where recent spend exceeds `baseline + threshold * baseline`
+4. Suppress findings below `--min-delta` USD to ignore noise (e.g. $2 CloudWatch spike)
 
-## Exit Codes
+This approach deliberately avoids z-score methods that break under the non-normal distributions common in cloud billing.
 
-- `0` success (including anomalies found)
-- `2` CLI usage error (missing/invalid flags)
-- `3` input file error (missing/unreadable file)
-- `4` schema/data error (missing columns, bad dates, non-numeric values)
-- `5` internal/runtime error
+---
 
-## Running Tests
+## Part of the Cloud & Capital Pipeline
 
-```bash
-pytest -q tests/
-```
+| Tool | Role |
+|------|------|
+| [FinOps Lite](https://github.com/cloudandcapital/finops-lite) | Cost pull + FOCUS 2026 export |
+| **FinOps Watchdog** | Anomaly detection from cost CSVs |
+| [Cloud Cost Guard](https://github.com/cloudandcapital/cloud-cost-guard) | Unified dashboard |
+| [Recovery Economics](https://github.com/cloudandcapital/recovery-economics) | Resilience cost modeling |
+| [AI Cost Lens](https://github.com/cloudandcapital/ai-cost-lens) | AI/LLM spend tracking |
+| [SaaS Cost Analyzer](https://github.com/cloudandcapital/saas-cost-analyzer) | SaaS license governance |
+| [Tech Spend Command Center](https://github.com/cloudandcapital/tech-spend-command-center) | Executive reporting |
 
-## Out of Scope for v0.1
-
-Out of scope for v0.1: cloud API collection, Slack/Teams/email alerts, schedulers/cron daemons, dashboards/UI, and auto-remediation. v0.1 only reads a local CSV and emits deterministic anomalies in JSON/CSV/YAML.
+---
 
 ## License
 
-MIT License — see [LICENSE](LICENSE)
+MIT © 2025 Diana Molski, Cloud & Capital
