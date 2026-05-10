@@ -1,18 +1,18 @@
 # FinOps Watchdog
 
-[![CI](https://github.com/dianuhs/finops-watchdog/actions/workflows/test.yml/badge.svg)](https://github.com/dianuhs/finops-watchdog/actions/workflows/test.yml)
+[![CI](https://github.com/cloudandcapital/finops-watchdog/actions/workflows/test.yml/badge.svg)](https://github.com/cloudandcapital/finops-watchdog/actions/workflows/test.yml)
 
 **Part of the Visibility → Variance → Tradeoffs pipeline.**
 
 | Tool | Role | Repo |
 |------|------|------|
-| FinOps Lite | Cost visibility — AWS/Azure/GCP spend, FOCUS 1.0 export | [dianuhs/finops-lite](https://github.com/dianuhs/finops-lite) |
-| **FinOps Watchdog** | Anomaly detection — spend spikes from any cost CSV | [dianuhs/finops-watchdog](https://github.com/dianuhs/finops-watchdog) |
-| Recovery Economics | Resilience modeling — backup/restore cost + scenario compare | [dianuhs/recovery-economics](https://github.com/dianuhs/recovery-economics) |
-| AI Cost Lens | AI spend observability — model-level cost across OpenAI, Anthropic, Bedrock | [dianuhs/ai-cost-lens](https://github.com/dianuhs/ai-cost-lens) |
-| SaaS Cost Analyzer | SaaS spend governance — unused licenses, per-seat costs, forecasting | [dianuhs/saas-cost-analyzer](https://github.com/dianuhs/saas-cost-analyzer) |
-| Cloud Cost Guard | Dashboard — spend trends, savings coverage, rightsizing | [dianuhs/cloud-cost-guard](https://github.com/dianuhs/cloud-cost-guard) |
-| Tech Spend Command Center | Executive summary — unified Cloud+AI+SaaS report | [dianuhs/tech-spend-command-center](https://github.com/dianuhs/tech-spend-command-center) |
+| FinOps Lite | Cost visibility — AWS/Azure/GCP spend, FOCUS 1.0 export | [cloudandcapital/finops-lite](https://github.com/cloudandcapital/finops-lite) |
+| **FinOps Watchdog** | Anomaly detection — spend spikes from any cost CSV | [cloudandcapital/finops-watchdog](https://github.com/cloudandcapital/finops-watchdog) |
+| Recovery Economics | Resilience modeling — backup/restore cost + scenario compare | [cloudandcapital/recovery-economics](https://github.com/cloudandcapital/recovery-economics) |
+| AI Cost Lens | AI spend observability — model-level cost across OpenAI, Anthropic, Bedrock | [cloudandcapital/ai-cost-lens](https://github.com/cloudandcapital/ai-cost-lens) |
+| SaaS Cost Analyzer | SaaS spend governance — unused licenses, per-seat costs, forecasting | [cloudandcapital/saas-cost-analyzer](https://github.com/cloudandcapital/saas-cost-analyzer) |
+| Cloud Cost Guard | Dashboard — spend trends, savings coverage, rightsizing | [cloudandcapital/cloud-cost-guard](https://github.com/cloudandcapital/cloud-cost-guard) |
+| Tech Spend Command Center | Executive summary — unified Cloud+AI+SaaS report | [cloudandcapital/tech-spend-command-center](https://github.com/cloudandcapital/tech-spend-command-center) |
 
 Six tools. One pipeline. Full Cloud+AI+SaaS coverage for every scope the FinOps Foundation 2026 Framework defines.
 
@@ -142,10 +142,10 @@ pytest -q tests/
 
 FinOps Watchdog is step two. Typical flow:
 
-1. **[FinOps Lite](https://github.com/dianuhs/finops-lite)** exports a FOCUS 1.0 CSV from AWS Cost Explorer
+1. **[FinOps Lite](https://github.com/cloudandcapital/finops-lite)** exports a FOCUS 1.0 CSV from AWS Cost Explorer
 2. **FinOps Watchdog** detects anomalies in that CSV
-3. **[Recovery Economics](https://github.com/dianuhs/recovery-economics)** models the cost impact of resilience decisions
-4. **[Cloud Cost Guard](https://github.com/dianuhs/cloud-cost-guard)** surfaces all of this in a dashboard
+3. **[Recovery Economics](https://github.com/cloudandcapital/recovery-economics)** models the cost impact of resilience decisions
+4. **[Cloud Cost Guard](https://github.com/cloudandcapital/cloud-cost-guard)** surfaces all of this in a dashboard
 
 ## License
 
