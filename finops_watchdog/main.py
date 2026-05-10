@@ -40,6 +40,7 @@ class DetectConfig:
     threshold: float
     min_amount: float
     output_format: str
+    report_path: Path | None = None
 
 
 @click.group()
@@ -93,6 +94,13 @@ def _window_callback(_: click.Context, __: click.Option, value: str) -> str:
     show_default=True,
     help="Ignore anomalies below this absolute delta.",
 )
+@click.option(
+    "--report",
+    "report_path",
+    type=click.Path(path_type=Path, dir_okay=False, writable=True),
+    default=None,
+    help="Write a human-readable markdown anomaly summary to this file.",
+)
 @click.pass_context
 def detect(
     ctx: click.Context,
@@ -104,6 +112,7 @@ def detect(
     window: str,
     threshold: float,
     min_amount: float,
+    report_path: Path | None,
 ) -> None:
     """Detect spend anomalies from a local CSV file."""
 
@@ -117,11 +126,14 @@ def detect(
         window_days=_parse_window_days(window),
         threshold=threshold,
         min_amount=min_amount,
+        report_path=report_path,
     )
 
     try:
         payload = _run_detection(config)
         _emit_payload(payload, config.output_format)
+        if config.report_path is not None:
+            _write_markdown_report(payload, config.report_path)
     except InputFileError as exc:
         click.echo(f"input file error: {exc}", err=True)
         ctx.exit(3)
@@ -310,6 +322,49 @@ def _emit_payload(payload: Dict[str, Any], output_format: str) -> None:
         return
 
     raise ValueError(f"unsupported output format: {output_format}")
+
+
+def _write_markdown_report(payload: Dict[str, Any], path: Path) -> None:
+    meta = payload["metadata"]
+    summary = payload["summary"]
+    anomalies = payload["anomalies"]
+
+    lines: List[str] = [
+        "# FinOps Watchdog — Anomaly Report",
+        "",
+        f"**Generated:** {meta['generated_at']}  ",
+        f"**Input:** `{meta['input_file']}`  ",
+        f"**Window:** {meta['window']}  ",
+        f"**Threshold:** {meta['threshold']}σ  ",
+        f"**Group by:** `{meta['group_by']}`",
+        "",
+        "## Summary",
+        "",
+        f"| Metric | Value |",
+        f"|--------|-------|",
+        f"| Total anomalies | {summary['total_anomalies']} |",
+        f"| Groups impacted | {summary['groups_impacted']} |",
+        f"| Max delta | {summary['max_delta_pct']:.1f}% |",
+        "",
+    ]
+
+    if not anomalies:
+        lines += ["## Anomalies", "", "_No anomalies detected._", ""]
+    else:
+        lines += [
+            "## Anomalies",
+            "",
+            "| Timestamp | Group | Baseline | Current | Delta | Delta % | Severity |",
+            "|-----------|-------|----------|---------|-------|---------|----------|",
+        ]
+        for a in anomalies:
+            lines.append(
+                f"| {a['timestamp']} | {a['group']} | {a['baseline']:.2f} |"
+                f" {a['current']:.2f} | {a['delta']:.2f} | {a['delta_pct']:.1f}% | **{a['severity']}** |"
+            )
+        lines.append("")
+
+    path.write_text("\n".join(lines), encoding="utf-8")
 
 
 def _anomalies_to_csv(anomalies: List[Dict[str, Any]]) -> str:
