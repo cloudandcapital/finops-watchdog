@@ -1,101 +1,150 @@
 # FinOps Watchdog
 
-[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Multi-cloud](https://img.shields.io/badge/cloud-AWS%20%7C%20Azure%20%7C%20GCP-orange)](https://github.com/cloudandcapital/finops-watchdog)
+FinOps Watchdog detects financially material increases in daily cloud cost. Version 0.2 adds the canonical Cloud & Capital Analysis Contract (CCAC) path used by the six-tool pipeline. The original explicitly mapped CSV command remains available for compatibility.
 
-**Baseline-aware cost anomaly detection — surface economically meaningful spend spikes from any billing CSV.**
+For the complete six-tool demo and roadmap, see [Tech Spend Command Center](https://github.com/cloudandcapital/tech-spend-command-center).
 
-Part of the [Cloud & Capital](https://github.com/cloudandcapital) FinOps pipeline.  
-Anomaly output feeds into [Cloud Cost Guard](https://github.com/cloudandcapital/cloud-cost-guard) — the unified FinOps dashboard.
+This repository does **not** mutate cloud resources, estimate savings, verify savings, or claim a root cause. An anomaly is an observed variance that requires review.
 
----
+## What works today
 
-**Features:**
-- One command: `detect` — reads a cost CSV, returns anomalies
-- Baseline-aware: rolling median + MAD (median absolute deviation) to minimize false positives
-- Configurable threshold and minimum delta to suppress billing noise
-- Machine-readable output: JSON, YAML, or CSV — pipe-friendly with exit codes
-- Works with any cost CSV — AWS Cost Explorer, Azure exports, GCP billing, or FOCUS 2026
-- Markdown report mode for async sharing
+- `watchdog ccac` consumes a `ccac/1.0.0` `tool_result` from FinOps Lite.
+- It reads observed, additive, one-day currency metrics and preserves their declared dimensions.
+- When reconciled daily service series are present, it analyzes those series and suppresses the overlapping provider-total series to prevent duplicate findings and downstream double-counting.
+- It calculates a trailing median, median absolute deviation (MAD), robust score, observed excess cost, and percentage change.
+- A finding must pass both statistical and financial materiality thresholds.
+- Zero-to-positive spend is explicitly classified as `new_spend`.
+- Series without enough history are reported as partial data quality, not silently treated as normal.
+- Output is a versioned CCAC `tool_result` with source hash, run identity, evidence, metrics, and lifecycle-ready findings.
+- `watchdog detect` still supports arbitrary local CSV files when column mappings are provided explicitly.
 
----
+FinOps Lite 0.2 emits reconciled daily AWS service metrics and provider totals. Watchdog analyzes the service series and suppresses the overlapping provider parent, producing service-attributed findings without counting the same spike twice. It preserves other dimensions when an upstream producer supplies them; it never infers dimensions from period totals.
 
 ## Install
 
-```bash
-pip install "git+https://github.com/cloudandcapital/finops-watchdog.git"
-# or
-pipx install .
-```
-
----
-
-## Usage
+Python 3.10 or newer is required.
 
 ```bash
-# Detect anomalies with default threshold (15% above baseline)
-finops-watchdog detect --input costs.csv
-
-# Tighter threshold (flag anything 10%+ above baseline)
-finops-watchdog detect --input costs.csv --threshold 0.10
-
-# JSON output for downstream tools
-finops-watchdog detect --input costs.csv --format json
-
-# Generate a Markdown anomaly report
-finops-watchdog detect --input costs.csv --report
-
-# YAML output
-finops-watchdog detect --input costs.csv --format yaml
+pipx install "git+https://github.com/cloudandcapital/finops-watchdog.git"
+watchdog --help
 ```
 
-**Exit codes:**
-- `0` — no anomalies above threshold
-- `1` — one or more anomalies detected
-- `2` — input error (bad file, missing column)
+For development from a clone:
 
----
+```bash
+python -m pip install -e ".[dev]"
+```
 
-## Input CSV Format
+## CCAC pipeline usage
 
-Watchdog expects a cost time-series CSV with at minimum:
+Run the deterministic public example:
 
-| Column | Description |
-|--------|-------------|
-| `date` | ISO date (YYYY-MM-DD) |
-| `service` or `group` | Service or cost grouping name |
-| `cost` | Daily cost amount (numeric) |
+```bash
+watchdog ccac --demo
+```
 
-FOCUS 2026 exports (`ChargePeriodStart`, `ServiceName`, `BilledCost`) are automatically mapped.
+**Illustrative sample billing data. No customer accounts, credentials, or production resources are connected.**
 
----
+Consume a FinOps Lite result:
 
-## How It Works
+```bash
+finops ccac --start 2026-07-01 --end 2026-07-31 --output finops-lite.json
+watchdog ccac --input finops-lite.json --output watchdog.json
+```
 
-Watchdog uses a **rolling baseline** approach:
-1. Build a baseline window (default: trailing 30 days before the detection window)
-2. Compute per-service **median** and **MAD** (robust to billing outliers)
-3. Flag any service where recent spend exceeds `baseline + threshold * baseline`
-4. Suppress findings below `--min-delta` USD to ignore noise (e.g. $2 CloudWatch spike)
+The acceptance suite validates this output against the shared CCAC reference schemas. Contributors may additionally run `ccac validate watchdog.json` after installing the separate CCAC reference package.
 
-This approach deliberately avoids z-score methods that break under the non-normal distributions common in cloud billing.
+The real FinOps Lite command reads AWS Cost Explorer through read-only API calls. The public `--demo` path uses clearly illustrative local data and no cloud credentials.
 
----
+Detection controls:
 
-## Part of the Cloud & Capital Pipeline
+```text
+--window-days INTEGER  Complete trailing days required; default 14
+--threshold FLOAT      Minimum robust MAD score; default 3.0
+--min-amount FLOAT     Minimum observed excess cost; default 10.0
+--min-percent FLOAT    Minimum increase over trailing median; default 20.0
+```
 
-| Tool | Role |
-|------|------|
-| [FinOps Lite](https://github.com/cloudandcapital/finops-lite) | Cost pull + FOCUS 2026 export |
-| **FinOps Watchdog** | Anomaly detection from cost CSVs |
-| [Cloud Cost Guard](https://github.com/cloudandcapital/cloud-cost-guard) | Unified dashboard |
-| [Recovery Economics](https://github.com/cloudandcapital/recovery-economics) | Resilience cost modeling |
-| [AI Cost Lens](https://github.com/cloudandcapital/ai-cost-lens) | AI/LLM spend tracking |
-| [SaaS Cost Analyzer](https://github.com/cloudandcapital/saas-cost-analyzer) | SaaS license governance |
-| [Tech Spend Command Center](https://github.com/cloudandcapital/tech-spend-command-center) | Executive reporting |
+All gates must pass. When the trailing MAD is zero, a positive break from a constant baseline can still qualify if both financial thresholds pass. New spend is evaluated against an all-zero trailing window.
 
----
+## Legacy CSV compatibility
+
+The CSV command does not automatically map provider exports or FOCUS columns. Supply the exact timestamp, cost, and grouping columns:
+
+```bash
+watchdog detect \
+  --input examples/sample_cost_data.csv \
+  --time-column date \
+  --value-column amount \
+  --group-by SERVICE \
+  --window 30d \
+  --threshold 3.0 \
+  --min-amount 10 \
+  --output-format json
+```
+
+Legacy output formats are JSON, YAML, and CSV. The legacy algorithm remains a trailing arithmetic mean and population-standard-deviation detector for backward compatibility; it is not the CCAC median/MAD detector.
+
+CSV users can select the same robust detector family used by the CCAC path:
+
+```bash
+watchdog detect \
+  --input costs.csv \
+  --time-column date \
+  --value-column cost \
+  --group-by service \
+  --output-format json \
+  --algorithm robust \
+  --min-percent 20 \
+  --fail-on-anomaly
+```
+
+Robust CSV mode requires consecutive, unique daily rows per group. Missing days fail closed instead of being interpreted as zero spend.
+
+Legacy command exit codes are:
+
+- `0`: analysis completed; by default this applies whether or not anomalies were found
+- `1`: anomalies found when the opt-in `--fail-on-anomaly` flag is used
+- `2`: invalid CLI usage
+- `3`: input file error
+- `4`: schema or data error
+- `5`: unexpected internal error
+
+Machine consumers should inspect the payload rather than treating a nonzero anomaly count as process failure.
+
+## Trust and interpretation
+
+- `impact` means observed cost above the trailing median on that day. It is not avoidable cost and not savings.
+- Findings begin with lifecycle status `open`; later systems may mark them acknowledged, investigating, expected change, resolved, or dismissed.
+- Watchdog does not produce opportunities, remediation commands, or root-cause assertions.
+- Required financial values fail closed when absent, non-numeric, non-finite, negative, duplicated for a daily scope, or structurally incompatible.
+- Illustrative output remains machine-labeled `mode: illustrative` and `data_classification: public_illustrative`.
+
+## Development
+
+```bash
+uv run --extra dev pytest
+```
+
+The test suite covers legacy behavior, deterministic CCAC output, schema validation compatibility, malformed financial values, insufficient history, new spend, materiality suppression, dimension preservation, and injected-event detection quality.
+
+## Pipeline compatibility
+
+The verified connection in this phase is:
+
+```text
+FinOps Lite CCAC tool_result -> FinOps Watchdog CCAC tool_result -> Tech Spend Command Center trusted_report
+```
+
+The complete illustrative acceptance run passes independent CCAC validation. Cloud Cost Guard remains unchanged until its downstream adapter is reviewed separately.
+
+| Component | Compatible version |
+|---|---|
+| FinOps Lite | `0.2.x` |
+| FinOps Watchdog | `0.2.x` |
+| CCAC | `ccac/1.0.0` |
+| Tech Spend Command Center | `0.2.x` |
 
 ## License
 
-MIT © 2025 Diana Molski, Cloud & Capital
+MIT © 2025–2026 Diana Molski, Cloud & Capital
