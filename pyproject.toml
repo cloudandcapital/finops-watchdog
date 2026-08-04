@@ -4,13 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "finops-watchdog"
-version = "0.1.0"
-description = "CSV-based cost anomaly detection CLI for FinOps teams"
+version = "0.2.0"
+description = "Robust CCAC and CSV cost anomaly detection for FinOps teams"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-    {name = "Diana", email = "your.email@example.com"},
+    {name = "Diana Molski"},
 ]
 keywords = ["finops", "cost-anomaly", "csv", "cli"]
 classifiers = [
@@ -20,7 +20,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -34,11 +33,26 @@ dependencies = [
     "PyYAML>=6.0.1",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "black>=26,<27",
+    "flake8>=7,<8",
+    "isort>=6,<7",
+    "pip-audit>=2.10,<3",
+    "pytest>=8,<9",
+]
+
 [project.scripts]
 watchdog = "finops_watchdog.main:cli"
 finops-watchdog = "finops_watchdog.main:cli"
 
 [project.urls]
-Homepage = "https://github.com/dianuhs/finops-watchdog"
-Repository = "https://github.com/dianuhs/finops-watchdog.git"
-"Bug Tracker" = "https://github.com/dianuhs/finops-watchdog/issues"
+Homepage = "https://github.com/cloudandcapital/finops-watchdog"
+Repository = "https://github.com/cloudandcapital/finops-watchdog.git"
+"Bug Tracker" = "https://github.com/cloudandcapital/finops-watchdog/issues"
+
+[tool.black]
+target-version = ["py310"]
+
+[tool.isort]
+profile = "black"

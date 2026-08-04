@@ -12,6 +12,12 @@ from finops_watchdog.main import cli
 FIXTURES = Path(__file__).parent / "fixtures"
 
 
+def test_version_option() -> None:
+    result = CliRunner().invoke(cli, ["--version"])
+    assert result.exit_code == 0
+    assert result.output.strip() == "finops-watchdog, version 0.2.0"
+
+
 def _detect_args(input_name: str) -> list[str]:
     return [
         "detect",
@@ -123,3 +129,26 @@ def test_detect_json_mode_stdout_is_valid_json_only() -> None:
     assert parsed["schema_version"] == "1.0"
     assert result.output.strip().startswith("{")
     assert result.output.strip().endswith("}")
+
+
+def test_robust_csv_algorithm_and_opt_in_anomaly_exit():
+    runner = CliRunner()
+    args = _detect_args("simple_spike.csv") + [
+        "--algorithm",
+        "robust",
+        "--min-percent",
+        "20",
+        "--fail-on-anomaly",
+    ]
+    result = runner.invoke(cli, args)
+    assert result.exit_code == 1
+    payload = json.loads(result.output)
+    assert payload["metadata"]["algorithm"] == "robust"
+    assert payload["anomalies"][0]["anomaly_type"] == "spend_above_robust_threshold"
+
+
+def test_fail_on_anomaly_keeps_no_anomaly_successful():
+    result = CliRunner().invoke(
+        cli, _detect_args("no_anomaly.csv") + ["--fail-on-anomaly"]
+    )
+    assert result.exit_code == 0

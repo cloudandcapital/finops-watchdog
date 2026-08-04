@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""FinOps Watchdog v0.1 CLI."""
+"""FinOps Watchdog CLI."""
 
 from __future__ import annotations
 
@@ -15,6 +15,15 @@ from typing import Any, Dict, List
 import click
 import pandas as pd
 import yaml
+
+from . import __version__
+from .ccac import (
+    CCACWatchdogError,
+    DetectorConfig,
+    build_result,
+    illustrative_input,
+    load_ccac,
+)
 
 SCHEMA_VERSION = "1.0"
 
@@ -39,13 +48,91 @@ class DetectConfig:
     window_days: int
     threshold: float
     min_amount: float
+    min_percent: float
+    algorithm: str
+    fail_on_anomaly: bool
     output_format: str
     report_path: Path | None = None
 
 
 @click.group()
+@click.version_option(version=__version__, prog_name="finops-watchdog")
 def cli() -> None:
-    """FinOps Watchdog v0.1."""
+    """FinOps Watchdog cost anomaly detection."""
+
+
+@cli.command("ccac")
+@click.option(
+    "--input",
+    "input_path",
+    type=click.Path(path_type=Path, dir_okay=False),
+    help="FinOps Lite CCAC tool_result JSON.",
+)
+@click.option("--demo", is_flag=True, help="Process deterministic illustrative data.")
+@click.option(
+    "--output",
+    type=click.Path(path_type=Path, dir_okay=False, writable=True),
+    help="Write result JSON instead of stdout.",
+)
+@click.option(
+    "--window-days", type=click.IntRange(min=2), default=14, show_default=True
+)
+@click.option(
+    "--threshold",
+    type=click.FloatRange(min=0.0, min_open=True),
+    default=3.0,
+    show_default=True,
+    help="Minimum robust MAD score.",
+)
+@click.option(
+    "--min-amount",
+    type=click.FloatRange(min=0.0),
+    default=10.0,
+    show_default=True,
+    help="Minimum observed excess cost.",
+)
+@click.option(
+    "--min-percent",
+    type=click.FloatRange(min=0.0),
+    default=20.0,
+    show_default=True,
+    help="Minimum increase over trailing median.",
+)
+@click.option(
+    "--generated-at", help="RFC3339 result timestamp; intended for reproducible runs."
+)
+def ccac_command(
+    input_path: Path | None,
+    demo: bool,
+    output: Path | None,
+    window_days: int,
+    threshold: float,
+    min_amount: float,
+    min_percent: float,
+    generated_at: str | None,
+) -> None:
+    """Consume FinOps Lite CCAC metrics and emit a Watchdog CCAC result."""
+    if demo == (input_path is not None):
+        raise click.UsageError("provide exactly one of --demo or --input")
+    try:
+        source = illustrative_input() if demo else load_ccac(input_path)  # type: ignore[arg-type]
+        result = build_result(
+            source,
+            config=DetectorConfig(window_days, threshold, min_amount, min_percent),
+            generated_at=(
+                "2026-08-04T12:05:00Z"
+                if demo and generated_at is None
+                else generated_at
+            ),
+        )
+    except CCACWatchdogError as exc:
+        raise click.ClickException(str(exc)) from exc
+    rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
+    if output is None:
+        click.echo(rendered, nl=False)
+    else:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(rendered, encoding="utf-8")
 
 
 def _window_callback(_: click.Context, __: click.Option, value: str) -> str:
@@ -95,6 +182,25 @@ def _window_callback(_: click.Context, __: click.Option, value: str) -> str:
     help="Ignore anomalies below this absolute delta.",
 )
 @click.option(
+    "--min-percent",
+    type=click.FloatRange(min=0.0),
+    default=0.0,
+    show_default=True,
+    help="Minimum percentage increase; used by the robust algorithm.",
+)
+@click.option(
+    "--algorithm",
+    type=click.Choice(["legacy", "robust"]),
+    default="legacy",
+    show_default=True,
+    help="Legacy mean/std or robust median/MAD detector.",
+)
+@click.option(
+    "--fail-on-anomaly",
+    is_flag=True,
+    help="Exit 1 when analysis completes with one or more anomalies.",
+)
+@click.option(
     "--report",
     "report_path",
     type=click.Path(path_type=Path, dir_okay=False, writable=True),
@@ -112,6 +218,9 @@ def detect(
     window: str,
     threshold: float,
     min_amount: float,
+    min_percent: float,
+    algorithm: str,
+    fail_on_anomaly: bool,
     report_path: Path | None,
 ) -> None:
     """Detect spend anomalies from a local CSV file."""
@@ -126,6 +235,9 @@ def detect(
         window_days=_parse_window_days(window),
         threshold=threshold,
         min_amount=min_amount,
+        min_percent=min_percent,
+        algorithm=algorithm,
+        fail_on_anomaly=fail_on_anomaly,
         report_path=report_path,
     )
 
@@ -144,7 +256,9 @@ def detect(
         click.echo(f"internal error: {exc}", err=True)
         ctx.exit(5)
 
-    ctx.exit(0)
+    ctx.exit(
+        1 if config.fail_on_anomaly and payload["summary"]["total_anomalies"] else 0
+    )
 
 
 def _parse_window_days(window: str) -> int:
@@ -162,12 +276,17 @@ def _run_detection(config: DetectConfig) -> Dict[str, Any]:
         value_column=config.value_column,
         group_by=config.group_by,
     )
-    anomalies = _detect_anomalies(
-        prepared,
-        window_days=config.window_days,
-        threshold=config.threshold,
-        min_amount=config.min_amount,
+    detector = (
+        _detect_robust_anomalies if config.algorithm == "robust" else _detect_anomalies
     )
+    kwargs = {
+        "window_days": config.window_days,
+        "threshold": config.threshold,
+        "min_amount": config.min_amount,
+    }
+    if config.algorithm == "robust":
+        kwargs["min_percent"] = config.min_percent
+    anomalies = detector(prepared, **kwargs)
     return _build_payload(config, anomalies)
 
 
@@ -204,7 +323,9 @@ def _prepare_dataframe(
     prepared = dataframe[[time_column, value_column, group_by]].copy()
     prepared.columns = ["timestamp", "value", "group"]
 
-    prepared["timestamp"] = pd.to_datetime(prepared["timestamp"], errors="coerce", utc=True)
+    prepared["timestamp"] = pd.to_datetime(
+        prepared["timestamp"], errors="coerce", utc=True
+    )
     if prepared["timestamp"].isna().any():
         raise SchemaDataError(f"invalid timestamp values in column '{time_column}'")
 
@@ -233,8 +354,18 @@ def _detect_anomalies(
     for group_value, group_frame in dataframe.groupby("group", sort=True):
         ordered = group_frame.sort_values("timestamp").copy()
 
-        baseline = ordered["value"].shift(1).rolling(window=window_days, min_periods=window_days).mean()
-        rolling_std = ordered["value"].shift(1).rolling(window=window_days, min_periods=window_days).std(ddof=0)
+        baseline = (
+            ordered["value"]
+            .shift(1)
+            .rolling(window=window_days, min_periods=window_days)
+            .mean()
+        )
+        rolling_std = (
+            ordered["value"]
+            .shift(1)
+            .rolling(window=window_days, min_periods=window_days)
+            .std(ddof=0)
+        )
 
         ordered["baseline"] = baseline
         ordered["rolling_std"] = rolling_std
@@ -278,6 +409,63 @@ def _detect_anomalies(
     return anomalies
 
 
+def _detect_robust_anomalies(
+    dataframe: pd.DataFrame,
+    *,
+    window_days: int,
+    threshold: float,
+    min_amount: float,
+    min_percent: float,
+) -> List[Dict[str, Any]]:
+    anomalies: List[Dict[str, Any]] = []
+    for group_value, frame in dataframe.groupby("group", sort=True):
+        ordered = frame.sort_values("timestamp").reset_index(drop=True)
+        if ordered["timestamp"].dt.date.duplicated().any():
+            raise SchemaDataError(f"duplicate daily rows for group '{group_value}'")
+        dates = list(ordered["timestamp"].dt.date)
+        if any(
+            current != previous + pd.Timedelta(days=1)
+            for previous, current in zip(dates, dates[1:])
+        ):
+            raise SchemaDataError(
+                f"missing daily row for group '{group_value}'; missing spend is not coerced to zero"
+            )
+        for position in range(window_days, len(ordered)):
+            history = ordered.iloc[position - window_days : position]["value"]
+            current = float(ordered.iloc[position]["value"])
+            baseline = float(history.median())
+            mad = float((history - baseline).abs().median())
+            delta = current - baseline
+            if delta <= 0 or delta < min_amount:
+                continue
+            new_spend = bool((history == 0).all() and current > 0)
+            delta_pct = (
+                100.0
+                if new_spend
+                else ((delta / baseline) * 100.0 if baseline > 0 else 0.0)
+            )
+            if delta_pct < min_percent:
+                continue
+            score = float("inf") if mad == 0 else delta / (1.4826 * mad)
+            if not new_spend and score < threshold:
+                continue
+            anomalies.append(
+                {
+                    "timestamp": _to_utc_iso(ordered.iloc[position]["timestamp"]),
+                    "group": group_value,
+                    "baseline": _rounded_float(baseline),
+                    "current": _rounded_float(current),
+                    "delta": _rounded_float(delta),
+                    "delta_pct": _rounded_float(delta_pct),
+                    "severity": _severity_for_score(score, threshold),
+                    "anomaly_type": (
+                        "new_spend" if new_spend else "spend_above_robust_threshold"
+                    ),
+                }
+            )
+    return anomalies
+
+
 def _severity_for_score(z_score: float, threshold: float) -> str:
     if z_score >= threshold * 2.0:
         return "critical"
@@ -286,9 +474,13 @@ def _severity_for_score(z_score: float, threshold: float) -> str:
     return "medium"
 
 
-def _build_payload(config: DetectConfig, anomalies: List[Dict[str, Any]]) -> Dict[str, Any]:
+def _build_payload(
+    config: DetectConfig, anomalies: List[Dict[str, Any]]
+) -> Dict[str, Any]:
     groups_impacted = len({anomaly["group"] for anomaly in anomalies})
-    max_delta_pct = max((abs(anomaly["delta_pct"]) for anomaly in anomalies), default=0.0)
+    max_delta_pct = max(
+        (abs(anomaly["delta_pct"]) for anomaly in anomalies), default=0.0
+    )
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -297,6 +489,8 @@ def _build_payload(config: DetectConfig, anomalies: List[Dict[str, Any]]) -> Dic
             "input_file": str(config.input_path),
             "window": config.window,
             "threshold": config.threshold,
+            "algorithm": config.algorithm,
+            "min_percent": config.min_percent,
             "group_by": config.group_by,
         },
         "summary": {
@@ -394,11 +588,21 @@ def _to_utc_iso(value: Any) -> str:
         timestamp = timestamp.tz_localize("UTC")
     else:
         timestamp = timestamp.tz_convert("UTC")
-    return timestamp.to_pydatetime().replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return (
+        timestamp.to_pydatetime()
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
 
 
 def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    return (
+        datetime.now(timezone.utc)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
 
 
 def _rounded_float(value: Any) -> float:
