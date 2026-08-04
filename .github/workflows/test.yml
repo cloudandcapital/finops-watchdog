@@ -74,3 +74,23 @@ jobs:
           package-smoke/bin/finops-watchdog ccac --demo > demo-1.json
           package-smoke/bin/finops-watchdog ccac --demo > demo-2.json
           cmp demo-1.json demo-2.json
+      - name: Verify documented installed legacy CSV command
+        run: |
+          package-smoke/bin/watchdog detect \
+            --input examples/cost-timeseries-sample.csv \
+            --time-column date \
+            --value-column amount \
+            --group-by SERVICE \
+            --window 30d \
+            --threshold 3.0 \
+            --min-amount 10 \
+            --output-format json > legacy-result.json
+          package-smoke/bin/python - <<'PY'
+          import json
+          from pathlib import Path
+
+          result = json.loads(Path("legacy-result.json").read_text())
+          assert result.get("schema_version") == "1.0"
+          assert isinstance(result.get("summary"), dict)
+          assert isinstance(result.get("anomalies"), list)
+          PY
