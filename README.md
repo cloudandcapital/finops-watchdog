@@ -69,11 +69,11 @@ All gates must pass. When the trailing MAD is zero, a positive break from a cons
 
 ## Legacy CSV compatibility
 
-The CSV command does not automatically map provider exports or FOCUS columns. Supply the exact timestamp, cost, and grouping columns:
+The CSV command does not automatically map provider exports or FOCUS columns. From a cloned checkout, the repository's inspectable [cost time-series fixture](examples/cost-timeseries-sample.csv) can be run with its exact timestamp, cost, and grouping columns:
 
 ```bash
 watchdog detect \
-  --input examples/sample_cost_data.csv \
+  --input examples/cost-timeseries-sample.csv \
   --time-column date \
   --value-column amount \
   --group-by SERVICE \
@@ -82,6 +82,8 @@ watchdog detect \
   --min-amount 10 \
   --output-format json
 ```
+
+Installed users can instead pass their own local CSV to `--input` and must supply the column names that actually exist in that file through `--time-column`, `--value-column`, and `--group-by`. No provider-export or FOCUS column mapping is inferred automatically.
 
 Legacy output formats are JSON, YAML, and CSV. The legacy algorithm remains a trailing arithmetic mean and population-standard-deviation detector for backward compatibility; it is not the CCAC median/MAD detector.
 
