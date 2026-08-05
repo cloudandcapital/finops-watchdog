@@ -142,7 +142,7 @@ The complete illustrative acceptance run passes independent CCAC validation. Clo
 
 | Component | Compatible version |
 |---|---|
-| FinOps Lite | `0.2.x` |
+| FinOps Lite | `0.3.x` |
 | FinOps Watchdog | `0.4.x` |
 | CCAC | `ccac/1.0.0` |
 | Tech Spend Command Center | `0.2.x` |
