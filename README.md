@@ -18,14 +18,16 @@ This repository does **not** mutate cloud resources, estimate savings, verify sa
 - Output is a versioned CCAC `tool_result` with source hash, run identity, evidence, metrics, and lifecycle-ready findings.
 - `watchdog detect` still supports arbitrary local CSV files when column mappings are provided explicitly.
 
-FinOps Lite 0.2 emits reconciled daily AWS service metrics and provider totals. Watchdog analyzes the service series and suppresses the overlapping provider parent, producing service-attributed findings without counting the same spike twice. It preserves other dimensions when an upstream producer supplies them; it never infers dimensions from period totals.
+Compatible FinOps Lite `0.3.x` releases emit reconciled daily AWS service metrics and provider totals. Watchdog analyzes the service series and suppresses the overlapping provider parent, producing service-attributed findings without counting the same spike twice. It preserves other dimensions when an upstream producer supplies them; it never infers dimensions from period totals.
 
-## Install
+The public demo is credential-free and uses entirely illustrative data.
+
+## Install the released CLI
 
 Python 3.10 or newer is required.
 
 ```bash
-pipx install "git+https://github.com/cloudandcapital/finops-watchdog.git"
+pipx install "git+https://github.com/cloudandcapital/finops-watchdog.git@v0.4.0"
 watchdog --help
 ```
 
@@ -40,8 +42,11 @@ python -m pip install -e ".[dev]"
 Run the deterministic public example:
 
 ```bash
-watchdog ccac --demo
+watchdog ccac --demo --output watchdog-result.json
 ```
+
+The command writes `watchdog-result.json`; rerunning with the same path
+replaces that explicitly named local file.
 
 **Illustrative sample billing data. No customer accounts, credentials, or production resources are connected.**
 
