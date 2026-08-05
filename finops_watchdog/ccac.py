@@ -576,7 +576,7 @@ def illustrative_input() -> dict[str, Any]:
     return {
         "contract": CONTRACT,
         "document_type": "tool_result",
-        "producer": {"name": "finops-lite", "version": "0.2.0"},
+        "producer": {"name": "finops-lite", "version": "0.3.0"},
         "run_id": "123e4567-e89b-12d3-a456-426614174010",
         "generated_at": "2026-08-04T12:00:00Z",
         "mode": "illustrative",
