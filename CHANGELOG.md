@@ -6,7 +6,13 @@ All notable changes to FinOps Watchdog are documented here.
 
 - Add a standard `finops-watchdog --version` installation smoke check.
 
-## [0.2.0] — 2026-08-04
+## [0.4.0] — Unreleased
+
+Version 0.4.0 is the first release of the CCAC pipeline implementation. The
+historical GitHub `v0.3.0` tag predates this implementation, and the package at
+that tag internally declared version `0.1.0`. Advancing to `0.4.0` preserves
+release chronology without rewriting, moving, or deleting that history. This
+version correction does not change analytical behavior.
 
 ### Added
 - `watchdog ccac` for direct FinOps Lite `ccac/1.0.0` ingestion and CCAC output.
