@@ -25,7 +25,7 @@ def test_demo_is_deterministic_and_emits_anomaly_not_opportunity():
     assert first.output == second.output
     payload = json.loads(first.output)
     assert payload["contract"] == "ccac/1.0.0"
-    assert payload["producer"] == {"name": "finops-watchdog", "version": "0.2.0"}
+    assert payload["producer"] == {"name": "finops-watchdog", "version": "0.4.0"}
     assert payload["mode"] == "illustrative"
     assert payload["run_id"] == illustrative_input()["run_id"]
     assert payload["quality"]["status"] == "valid"

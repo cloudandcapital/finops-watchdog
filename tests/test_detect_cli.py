@@ -15,7 +15,7 @@ FIXTURES = Path(__file__).parent / "fixtures"
 def test_version_option() -> None:
     result = CliRunner().invoke(cli, ["--version"])
     assert result.exit_code == 0
-    assert result.output.strip() == "finops-watchdog, version 0.2.0"
+    assert result.output.strip() == "finops-watchdog, version 0.4.0"
 
 
 def _detect_args(input_name: str) -> list[str]:

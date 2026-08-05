@@ -1,6 +1,6 @@
 # FinOps Watchdog
 
-FinOps Watchdog detects financially material increases in daily cloud cost. Version 0.2 adds the canonical Cloud & Capital Analysis Contract (CCAC) path used by the six-tool pipeline. The original explicitly mapped CSV command remains available for compatibility.
+FinOps Watchdog detects financially material increases in daily cloud cost. Version 0.4 is the first release of the canonical Cloud & Capital Analysis Contract (CCAC) implementation used by the six-tool pipeline. The original explicitly mapped CSV command remains available for compatibility.
 
 For the complete six-tool demo and roadmap, see [Tech Spend Command Center](https://github.com/cloudandcapital/tech-spend-command-center).
 
@@ -143,7 +143,7 @@ The complete illustrative acceptance run passes independent CCAC validation. Clo
 | Component | Compatible version |
 |---|---|
 | FinOps Lite | `0.2.x` |
-| FinOps Watchdog | `0.2.x` |
+| FinOps Watchdog | `0.4.x` |
 | CCAC | `ccac/1.0.0` |
 | Tech Spend Command Center | `0.2.x` |
 
