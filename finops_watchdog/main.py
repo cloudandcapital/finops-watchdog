@@ -63,6 +63,13 @@ def cli() -> None:
 
 @cli.command("ccac")
 @click.option(
+    "--contract-version",
+    type=click.Choice(["1.0.0", "1.1.0"], case_sensitive=True),
+    default="1.0.0",
+    show_default=True,
+    help="CCAC contract version to consume and emit.",
+)
+@click.option(
     "--input",
     "input_path",
     type=click.Path(path_type=Path, dir_okay=False),
@@ -102,6 +109,7 @@ def cli() -> None:
     "--generated-at", help="RFC3339 result timestamp; intended for reproducible runs."
 )
 def ccac_command(
+    contract_version: str,
     input_path: Path | None,
     demo: bool,
     output: Path | None,
@@ -115,7 +123,11 @@ def ccac_command(
     if demo == (input_path is not None):
         raise click.UsageError("provide exactly one of --demo or --input")
     try:
-        source = illustrative_input() if demo else load_ccac(input_path)  # type: ignore[arg-type]
+        source = (
+            illustrative_input(contract_version)
+            if demo
+            else load_ccac(input_path)  # type: ignore[arg-type]
+        )
         result = build_result(
             source,
             config=DetectorConfig(window_days, threshold, min_amount, min_percent),
@@ -124,6 +136,8 @@ def ccac_command(
                 if demo and generated_at is None
                 else generated_at
             ),
+            contract_version=contract_version,
+            compatibility_demo=demo and contract_version == "1.0.0",
         )
     except CCACWatchdogError as exc:
         raise click.ClickException(str(exc)) from exc

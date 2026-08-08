@@ -11,12 +11,24 @@ import uuid
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
+from importlib.resources import files
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from . import __version__
 
-CONTRACT = "ccac/1.0.0"
+CONTRACTS = {"1.0.0": "ccac/1.0.0", "1.1.0": "ccac/1.1.0"}
+CONTRACT = CONTRACTS["1.0.0"]
+LEGACY_VERSION = "0.4.0"
+LEGACY_DEMO_SHA256 = "5f2b954062a3bcf709df6f0f709348f67ee90029bc06606886931179082689b5"
+FINOPS_LITE_1_1_COMMIT = "d72649ec07aa57c60a7ea3f8ff2890b8d95c4b93"
+FINOPS_LITE_1_1_SHA256 = (
+    "ae40d79949a0f6abccaf0f810e602eae8649b02c9a1379af405af2a1fc97b3ac"
+)
+SUPPORTED_FINOPS_LITE_VERSIONS = {
+    "ccac/1.0.0": {"0.3.0", "0.4.0"},
+    "ccac/1.1.0": {"0.4.0"},
+}
 MONEY = Decimal("0.01")
 
 
@@ -120,31 +132,231 @@ def load_ccac(path: Path) -> dict[str, Any]:
     return payload
 
 
-def _validate_envelope(payload: Mapping[str, Any]) -> None:
-    if payload.get("contract") != CONTRACT:
+def _validate_envelope(
+    payload: Mapping[str, Any],
+    expected_contract: str,
+    *,
+    expected_run_id: str | None = None,
+    expected_mode: str | None = None,
+) -> None:
+    contract = payload.get("contract")
+    if contract not in CONTRACTS.values():
         raise CCACWatchdogError(
-            f"unsupported contract: {payload.get('contract')!r}; expected {CONTRACT}"
+            f"unsupported contract: {contract!r}; supported contracts are ccac/1.0.0 and ccac/1.1.0"
+        )
+    if contract != expected_contract:
+        raise CCACWatchdogError(
+            f"input/output contract mismatch: input is {contract}; requested output is {expected_contract}"
         )
     if payload.get("document_type") != "tool_result":
         raise CCACWatchdogError("input document_type must be 'tool_result'")
     producer = payload.get("producer")
     if not isinstance(producer, Mapping) or producer.get("name") != "finops-lite":
         raise CCACWatchdogError("CCAC input must be produced by finops-lite")
-    if payload.get("mode") not in {"illustrative", "real"}:
+    producer_version = producer.get("version")
+    if producer_version not in SUPPORTED_FINOPS_LITE_VERSIONS[expected_contract]:
+        raise CCACWatchdogError(
+            f"unsupported finops-lite version {producer_version!r} for {expected_contract}"
+        )
+    mode = payload.get("mode")
+    if mode not in {"illustrative", "real"}:
         raise CCACWatchdogError("input mode must be illustrative or real")
+    if expected_mode is not None and mode != expected_mode:
+        raise CCACWatchdogError(
+            f"input mode mismatch: input is {mode}; expected {expected_mode}"
+        )
     try:
-        uuid.UUID(str(payload.get("run_id")))
+        run_id = str(payload.get("run_id"))
+        uuid.UUID(run_id)
     except (ValueError, TypeError) as exc:
         raise CCACWatchdogError("input run_id must be a UUID") from exc
+    if expected_run_id is not None and run_id != expected_run_id:
+        raise CCACWatchdogError(
+            f"input run_id mismatch: input is {run_id}; expected {expected_run_id}"
+        )
     if not isinstance(payload.get("metrics"), list):
         raise CCACWatchdogError("input metrics must be an array")
-    if not isinstance(payload.get("period"), Mapping):
+    period = payload.get("period")
+    if not isinstance(period, Mapping):
         raise CCACWatchdogError("input period is required")
+    try:
+        start = date.fromisoformat(str(period.get("start")))
+        end = date.fromisoformat(str(period.get("end")))
+    except ValueError as exc:
+        raise CCACWatchdogError("input period must use ISO dates") from exc
+    if end <= start or period.get("timezone") != "UTC":
+        raise CCACWatchdogError("input period must be half-open with timezone UTC")
+    if expected_contract == CONTRACTS["1.1.0"]:
+        _validate_1_1_lineage(payload)
 
 
-def extract_daily_observations(payload: Mapping[str, Any]) -> list[Observation]:
+def _validate_1_1_lineage(payload: Mapping[str, Any]) -> None:
+    inputs = payload.get("inputs")
+    evidence = payload.get("evidence")
+    if not isinstance(inputs, list) or not inputs:
+        raise CCACWatchdogError("CCAC 1.1 input sources are required")
+    if not isinstance(evidence, list) or not evidence:
+        raise CCACWatchdogError("CCAC 1.1 evidence is required")
+    source_hashes: dict[str, str] = {}
+    for index, source in enumerate(inputs):
+        if not isinstance(source, Mapping):
+            raise CCACWatchdogError(f"inputs[{index}] must be an object")
+        source_id = str(source.get("id") or "")
+        content_hash = str(source.get("content_sha256") or "")
+        if not source_id or source_id in source_hashes:
+            raise CCACWatchdogError("CCAC 1.1 source identities must be unique")
+        if not re.fullmatch(r"[0-9a-f]{64}", content_hash):
+            raise CCACWatchdogError(f"inputs[{index}].content_sha256 is invalid")
+        source_hashes[source_id] = content_hash
+        expected_access = (
+            ("illustrative_fixture", "public_illustrative")
+            if payload["mode"] == "illustrative"
+            else ("local_read_only", "customer_confidential")
+        )
+        if (source.get("access"), source.get("data_classification")) != expected_access:
+            raise CCACWatchdogError("input mode contradicts source access metadata")
+    evidence_ids: set[str] = set()
+    for index, item in enumerate(evidence):
+        if not isinstance(item, Mapping):
+            raise CCACWatchdogError(f"evidence[{index}] must be an object")
+        evidence_id = str(item.get("id") or "")
+        if not evidence_id or evidence_id in evidence_ids:
+            raise CCACWatchdogError("CCAC 1.1 evidence identities must be unique")
+        evidence_ids.add(evidence_id)
+        source_ids = item.get("source_ids")
+        if not isinstance(source_ids, list) or not source_ids:
+            raise CCACWatchdogError(f"evidence[{index}].source_ids is required")
+        if any(source_id not in source_hashes for source_id in source_ids):
+            raise CCACWatchdogError("CCAC 1.1 evidence references an unknown source")
+        if item.get("content_sha256") not in {
+            source_hashes[source_id] for source_id in source_ids
+        }:
+            raise CCACWatchdogError("CCAC 1.1 evidence source hash mismatch")
+    canonical = []
+    for metric in payload["metrics"]:
+        if not isinstance(metric, Mapping):
+            continue
+        boundary = metric.get("accounting_boundary")
+        if (
+            isinstance(boundary, Mapping)
+            and boundary.get("relationship") == "canonical_scope_spend"
+        ):
+            canonical.append(metric)
+    if len(canonical) != 1:
+        raise CCACWatchdogError(
+            "FinOps Lite CCAC 1.1 input must contain exactly one canonical Cloud scope"
+        )
+    scope = canonical[0]
+    boundary = scope.get("accounting_boundary")
+    if not isinstance(boundary, Mapping) or (
+        scope.get("id"),
+        boundary.get("scope"),
+        boundary.get("canonical_owner"),
+        boundary.get("source_channel"),
+        boundary.get("cost_basis"),
+    ) != (
+        "metric.tech-spend.scope.cloud",
+        "cloud",
+        "finops-lite",
+        "cloud_provider_billing",
+        "net_cost",
+    ):
+        raise CCACWatchdogError("FinOps Lite CCAC 1.1 canonical Cloud scope is invalid")
+    value = _decimal(scope.get("value"), "canonical Cloud scope value")
+    if value < 0:
+        raise CCACWatchdogError("canonical Cloud scope value cannot be negative")
+    if scope.get("currency") != "USD":
+        raise CCACWatchdogError(
+            "FinOps Lite CCAC 1.1 canonical Cloud scope must be USD"
+        )
+    metric_evidence = scope.get("evidence_ids")
+    if not isinstance(metric_evidence, list) or any(
+        item not in evidence_ids for item in metric_evidence
+    ):
+        raise CCACWatchdogError("canonical Cloud scope evidence lineage is invalid")
+    extensions = payload.get("extensions")
+    finops_extension = (
+        extensions.get("finops_lite") if isinstance(extensions, Mapping) else None
+    )
+    reconciliation = (
+        finops_extension.get("reconciliation")
+        if isinstance(finops_extension, Mapping)
+        else None
+    )
+    if not isinstance(reconciliation, Mapping):
+        raise CCACWatchdogError("FinOps Lite daily-series reconciliation is required")
+    try:
+        total = _decimal(reconciliation.get("total"), "reconciliation.total")
+        daily_sum = _decimal(
+            reconciliation.get("daily_sum"), "reconciliation.daily_sum"
+        )
+        service_sum = _decimal(
+            reconciliation.get("service_sum"), "reconciliation.service_sum"
+        )
+        difference = _decimal(
+            reconciliation.get("difference"), "reconciliation.difference"
+        )
+        tolerance = _decimal(
+            reconciliation.get("tolerance"), "reconciliation.tolerance"
+        )
+    except CCACWatchdogError as exc:
+        raise CCACWatchdogError(
+            f"invalid FinOps Lite daily-series reconciliation: {exc}"
+        ) from exc
+    if (
+        reconciliation.get("status") != "passed"
+        or tolerance < 0
+        or abs(difference) > tolerance
+        or abs(total - value) > tolerance
+        or abs(daily_sum - total) > tolerance
+        or abs(service_sum - total) > tolerance
+    ):
+        raise CCACWatchdogError("FinOps Lite daily-series reconciliation failed")
+    declared_daily_ids = (
+        finops_extension.get("daily_service_metric_ids")
+        if isinstance(finops_extension, Mapping)
+        else None
+    )
+    actual_daily_ids = [
+        metric.get("id")
+        for metric in payload["metrics"]
+        if isinstance(metric, Mapping)
+        and isinstance(metric.get("dimensions"), Mapping)
+        and "date" in metric["dimensions"]
+        and "service" in metric["dimensions"]
+    ]
+    if (
+        not isinstance(declared_daily_ids, list)
+        or len(declared_daily_ids) != len(set(map(str, declared_daily_ids)))
+        or set(map(str, declared_daily_ids)) != set(map(str, actual_daily_ids))
+    ):
+        raise CCACWatchdogError(
+            "FinOps Lite daily-service metric inventory does not reconcile"
+        )
+
+
+def extract_daily_observations(
+    payload: Mapping[str, Any],
+    expected_contract: str = CONTRACT,
+    *,
+    expected_run_id: str | None = None,
+    expected_mode: str | None = None,
+) -> list[Observation]:
     """Extract additive observed one-day currency metrics without inventing dimensions."""
-    _validate_envelope(payload)
+    _validate_envelope(
+        payload,
+        expected_contract,
+        expected_run_id=expected_run_id,
+        expected_mode=expected_mode,
+    )
+    top_period = payload["period"]
+    top_start = date.fromisoformat(str(top_period["start"]))
+    top_end = date.fromisoformat(str(top_period["end"]))
+    known_evidence_ids = {
+        str(item.get("id"))
+        for item in payload.get("evidence", [])
+        if isinstance(item, Mapping)
+    }
     observations: list[Observation] = []
     seen: set[tuple[date, tuple[tuple[str, str], ...]]] = set()
     for index, metric in enumerate(payload["metrics"]):
@@ -173,6 +385,8 @@ def extract_daily_observations(payload: Mapping[str, Any]) -> list[Observation]:
             raise CCACWatchdogError(f"metrics[{index}] has invalid date") from exc
         if start != day or end != day + timedelta(days=1):
             raise CCACWatchdogError(f"metrics[{index}] is not a one-day metric")
+        if day < top_start or end > top_end:
+            raise CCACWatchdogError(f"metrics[{index}] falls outside the input period")
         value = _decimal(metric.get("value"), f"metrics[{index}].value")
         if value < 0:
             raise CCACWatchdogError(f"metrics[{index}].value cannot be negative")
@@ -185,9 +399,14 @@ def extract_daily_observations(payload: Mapping[str, Any]) -> list[Observation]:
                 f"duplicate daily metric for {day} and {dict(series_dimensions)}"
             )
         seen.add(key)
-        evidence_ids = metric.get("evidence_ids")
-        if not isinstance(evidence_ids, list) or not evidence_ids:
+        metric_evidence_ids = metric.get("evidence_ids")
+        if not isinstance(metric_evidence_ids, list) or not metric_evidence_ids:
             raise CCACWatchdogError(f"metrics[{index}].evidence_ids is required")
+        if expected_contract == CONTRACTS["1.1.0"] and any(
+            evidence_id not in known_evidence_ids
+            for evidence_id in map(str, metric_evidence_ids)
+        ):
+            raise CCACWatchdogError(f"metrics[{index}] has unknown evidence lineage")
         observations.append(
             Observation(
                 str(metric.get("id")),
@@ -195,7 +414,7 @@ def extract_daily_observations(payload: Mapping[str, Any]) -> list[Observation]:
                 value,
                 currency,
                 series_dimensions,
-                tuple(map(str, evidence_ids)),
+                tuple(map(str, metric_evidence_ids)),
             )
         )
     if not observations:
@@ -213,6 +432,9 @@ def extract_daily_observations(payload: Mapping[str, Any]) -> list[Observation]:
         if any(key == "service" for key, _ in observation.dimensions)
         or observation.dimensions not in service_parent_dimensions
     ]
+    currencies = {observation.currency for observation in observations}
+    if len(currencies) != 1:
+        raise CCACWatchdogError("input daily metrics changes currency across series")
     return sorted(observations, key=lambda item: (item.dimensions, item.day))
 
 
@@ -348,14 +570,34 @@ def build_result(
     *,
     config: DetectorConfig,
     generated_at: str | datetime | None = None,
+    contract_version: str = "1.0.0",
+    compatibility_demo: bool = False,
+    expected_run_id: str | None = None,
+    expected_mode: str | None = None,
 ) -> dict[str, Any]:
-    observations = extract_daily_observations(payload)
+    if contract_version not in CONTRACTS:
+        raise CCACWatchdogError(
+            f"unsupported output contract version: {contract_version!r}"
+        )
+    output_contract = CONTRACTS[contract_version]
+    observations = extract_daily_observations(
+        payload,
+        output_contract,
+        expected_run_id=expected_run_id,
+        expected_mode=expected_mode,
+    )
     events, insufficient = detect(observations, config)
     generated = _timestamp(generated_at)
     source_bytes = _canonical(payload)
     source_hash = hashlib.sha256(source_bytes).hexdigest()
     source_id = "source.finops-watchdog.finops-lite-result"
     evidence_id = "evidence.finops-watchdog.input-result"
+    legacy_demo = (
+        compatibility_demo
+        and output_contract == CONTRACT
+        and _canonical(payload) == _canonical(illustrative_input())
+    )
+    producer_version = LEGACY_VERSION if legacy_demo else __version__
     metrics: list[dict[str, Any]] = []
     findings: list[dict[str, Any]] = []
     for event in events:
@@ -474,10 +716,10 @@ def build_result(
         }
         for item in insufficient
     ]
-    return {
-        "contract": CONTRACT,
+    result = {
+        "contract": output_contract,
         "document_type": "tool_result",
-        "producer": {"name": "finops-watchdog", "version": __version__},
+        "producer": {"name": "finops-watchdog", "version": producer_version},
         "run_id": str(payload["run_id"]),
         "generated_at": generated,
         "mode": payload["mode"],
@@ -486,8 +728,8 @@ def build_result(
             {
                 "id": source_id,
                 "source_type": "ccac_tool_result",
-                "source_version": CONTRACT,
-                "adapter_version": __version__,
+                "source_version": output_contract,
+                "adapter_version": producer_version,
                 "content_sha256": source_hash,
                 "access": (
                     "illustrative_fixture"
@@ -534,10 +776,47 @@ def build_result(
             }
         },
     }
+    if output_contract == CONTRACTS["1.1.0"]:
+        result["extensions"]["finops_watchdog"]["upstream"] = {
+            "producer": dict(payload["producer"]),
+            "contract": str(payload["contract"]),
+            "content_sha256": source_hash,
+            "evidence_ids": sorted(
+                str(item["id"])
+                for item in payload["evidence"]
+                if isinstance(item, Mapping) and item.get("id")
+            ),
+        }
+        result["extensions"]["finops_watchdog"].update(
+            {"organizational_coverage": "partial", "total_eligible": False}
+        )
+        if _canonical(payload) == _canonical(illustrative_input("1.1.0")):
+            result["extensions"]["finops_watchdog"]["upstream"].update(
+                {
+                    "source_commit": FINOPS_LITE_1_1_COMMIT,
+                    "artifact_sha256": FINOPS_LITE_1_1_SHA256,
+                }
+            )
+    return result
 
 
-def illustrative_input() -> dict[str, Any]:
+def illustrative_input(contract_version: str = "1.0.0") -> dict[str, Any]:
     """Deterministic FinOps Lite-shaped fixture with one injected spike."""
+    if contract_version == "1.1.0":
+        resource = files("finops_watchdog").joinpath(
+            "data/illustrative-finops-lite-1.1.json"
+        )
+        raw = resource.read_bytes()
+        if hashlib.sha256(raw).hexdigest() != FINOPS_LITE_1_1_SHA256:
+            raise CCACWatchdogError("packaged FinOps Lite 1.1 fixture hash mismatch")
+        value = json.loads(raw)
+        if not isinstance(value, dict):
+            raise CCACWatchdogError("packaged FinOps Lite 1.1 fixture is invalid")
+        return value
+    if contract_version != "1.0.0":
+        raise CCACWatchdogError(
+            f"unsupported illustrative contract version: {contract_version!r}"
+        )
     start = date(2026, 7, 1)
     values = [Decimal("100") + Decimal(index % 3) for index in range(20)] + [
         Decimal("175")
