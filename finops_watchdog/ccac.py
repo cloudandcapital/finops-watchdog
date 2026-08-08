@@ -211,7 +211,7 @@ def _validate_1_1_lineage(payload: Mapping[str, Any]) -> None:
         expected_access = (
             ("illustrative_fixture", "public_illustrative")
             if payload["mode"] == "illustrative"
-            else ("local_read_only", "customer_confidential")
+            else ("external_read_only", "customer_confidential")
         )
         if (source.get("access"), source.get("data_classification")) != expected_access:
             raise CCACWatchdogError("input mode contradicts source access metadata")
@@ -274,6 +274,19 @@ def _validate_1_1_lineage(payload: Mapping[str, Any]) -> None:
         item not in evidence_ids for item in metric_evidence
     ):
         raise CCACWatchdogError("canonical Cloud scope evidence lineage is invalid")
+    try:
+        currency_minor_unit = _decimal(
+            boundary.get("currency_minor_unit"),
+            "canonical Cloud currency_minor_unit",
+        )
+    except CCACWatchdogError as exc:
+        raise CCACWatchdogError(
+            f"invalid canonical Cloud currency minor unit: {exc}"
+        ) from exc
+    if currency_minor_unit <= 0:
+        raise CCACWatchdogError(
+            "canonical Cloud currency minor unit must be finite and positive"
+        )
     extensions = payload.get("extensions")
     finops_extension = (
         extensions.get("finops_lite") if isinstance(extensions, Mapping) else None
@@ -303,36 +316,186 @@ def _validate_1_1_lineage(payload: Mapping[str, Any]) -> None:
         raise CCACWatchdogError(
             f"invalid FinOps Lite daily-series reconciliation: {exc}"
         ) from exc
-    if (
-        reconciliation.get("status") != "passed"
-        or tolerance < 0
-        or abs(difference) > tolerance
-        or abs(total - value) > tolerance
-        or abs(daily_sum - total) > tolerance
-        or abs(service_sum - total) > tolerance
-    ):
+    if tolerance < 0 or tolerance > currency_minor_unit or tolerance > MONEY:
+        raise CCACWatchdogError(
+            "FinOps Lite reconciliation tolerance exceeds the allowed currency minor unit"
+        )
+    if reconciliation.get("status") != "passed":
         raise CCACWatchdogError("FinOps Lite daily-series reconciliation failed")
-    declared_daily_ids = (
-        finops_extension.get("daily_service_metric_ids")
-        if isinstance(finops_extension, Mapping)
-        else None
-    )
-    actual_daily_ids = [
-        metric.get("id")
-        for metric in payload["metrics"]
+
+    metrics = payload["metrics"]
+    metric_counts: dict[str, int] = {}
+    metric_by_id: dict[str, Mapping[str, Any]] = {}
+    for metric in metrics:
+        if not isinstance(metric, Mapping):
+            continue
+        metric_id = str(metric.get("id") or "")
+        metric_counts[metric_id] = metric_counts.get(metric_id, 0) + 1
+        metric_by_id[metric_id] = metric
+
+    def validate_inventory(name: str, actual_ids: list[str]) -> list[str]:
+        declared = finops_extension.get(name)
+        if (
+            not isinstance(declared, list)
+            or any(not isinstance(item, str) or not item for item in declared)
+            or len(declared) != len(set(declared))
+            or set(declared) != set(actual_ids)
+            or any(metric_counts.get(item) != 1 for item in declared)
+        ):
+            raise CCACWatchdogError(
+                f"FinOps Lite {name.replace('_', '-')} inventory does not reconcile"
+            )
+        return declared
+
+    daily_candidates = [
+        str(metric.get("id") or "")
+        for metric in metrics
         if isinstance(metric, Mapping)
         and isinstance(metric.get("dimensions"), Mapping)
         and "date" in metric["dimensions"]
         and "service" in metric["dimensions"]
     ]
-    if (
-        not isinstance(declared_daily_ids, list)
-        or len(declared_daily_ids) != len(set(map(str, declared_daily_ids)))
-        or set(map(str, declared_daily_ids)) != set(map(str, actual_daily_ids))
-    ):
-        raise CCACWatchdogError(
-            "FinOps Lite daily-service metric inventory does not reconcile"
+    service_candidates = [
+        str(metric.get("id") or "")
+        for metric in metrics
+        if isinstance(metric, Mapping)
+        and isinstance(metric.get("dimensions"), Mapping)
+        and "service" in metric["dimensions"]
+        and "date" not in metric["dimensions"]
+    ]
+    daily_ids = validate_inventory("daily_service_metric_ids", daily_candidates)
+    service_ids = validate_inventory("service_metric_ids", service_candidates)
+
+    top_period = payload["period"]
+    top_start = date.fromisoformat(str(top_period["start"]))
+    top_end = date.fromisoformat(str(top_period["end"]))
+
+    def validated_value(
+        metric_id: str, expected_dimensions: set[str], *, daily: bool
+    ) -> tuple[Decimal, str | None]:
+        metric = metric_by_id[metric_id]
+        dimensions = metric.get("dimensions")
+        if (
+            metric.get("basis") != "observed"
+            or metric.get("unit") != "currency"
+            or metric.get("additivity") != "additive"
+            or metric.get("currency") != scope.get("currency")
+            or not isinstance(dimensions, Mapping)
+            or set(dimensions) != expected_dimensions
+            or dimensions.get("scope") != "cloud"
+            or not isinstance(dimensions.get("provider"), str)
+            or not dimensions.get("provider")
+            or ("service" in expected_dimensions and not dimensions.get("service"))
+        ):
+            raise CCACWatchdogError(
+                f"FinOps Lite reconciliation metric {metric_id!r} has invalid semantics"
+            )
+        metric_period = metric.get("period")
+        if not isinstance(metric_period, Mapping):
+            raise CCACWatchdogError(
+                f"FinOps Lite reconciliation metric {metric_id!r} has invalid period"
+            )
+        try:
+            start = date.fromisoformat(str(metric_period.get("start")))
+            end = date.fromisoformat(str(metric_period.get("end")))
+        except ValueError as exc:
+            raise CCACWatchdogError(
+                f"FinOps Lite reconciliation metric {metric_id!r} has invalid period"
+            ) from exc
+        metric_day: str | None = None
+        if daily:
+            metric_day = str(dimensions.get("date"))
+            try:
+                day = date.fromisoformat(metric_day)
+            except ValueError as exc:
+                raise CCACWatchdogError(
+                    f"FinOps Lite reconciliation metric {metric_id!r} has invalid date"
+                ) from exc
+            if start != day or end != day + timedelta(days=1):
+                raise CCACWatchdogError(
+                    f"FinOps Lite reconciliation metric {metric_id!r} is not one-day"
+                )
+        elif start != top_start or end != top_end:
+            raise CCACWatchdogError(
+                f"FinOps Lite reconciliation metric {metric_id!r} is period-misaligned"
+            )
+        if start < top_start or end > top_end or metric_period.get("timezone") != "UTC":
+            raise CCACWatchdogError(
+                f"FinOps Lite reconciliation metric {metric_id!r} is out of period"
+            )
+        evidence_lineage = metric.get("evidence_ids")
+        if (
+            not isinstance(evidence_lineage, list)
+            or not evidence_lineage
+            or any(str(item) not in evidence_ids for item in evidence_lineage)
+        ):
+            raise CCACWatchdogError(
+                f"FinOps Lite reconciliation metric {metric_id!r} has unknown evidence lineage"
+            )
+        metric_value = _decimal(metric.get("value"), f"metric {metric_id} value")
+        if metric_value < 0:
+            raise CCACWatchdogError(
+                f"FinOps Lite reconciliation metric {metric_id!r} cannot be negative"
+            )
+        return metric_value, metric_day
+
+    daily_by_date: dict[str, Decimal] = {}
+    actual_daily_sum = Decimal("0")
+    for metric_id in daily_ids:
+        metric_value, metric_day = validated_value(
+            metric_id, {"scope", "provider", "service", "date"}, daily=True
         )
+        actual_daily_sum += metric_value
+        assert metric_day is not None
+        daily_by_date[metric_day] = (
+            daily_by_date.get(metric_day, Decimal("0")) + metric_value
+        )
+
+    actual_service_sum = Decimal("0")
+    for metric_id in service_ids:
+        metric_value, _ = validated_value(
+            metric_id, {"scope", "provider", "service"}, daily=False
+        )
+        actual_service_sum += metric_value
+
+    provider_daily = [
+        metric
+        for metric in metrics
+        if isinstance(metric, Mapping)
+        and isinstance(metric.get("dimensions"), Mapping)
+        and "date" in metric["dimensions"]
+        and "service" not in metric["dimensions"]
+    ]
+    seen_provider_days: set[str] = set()
+    for metric in provider_daily:
+        metric_id = str(metric.get("id") or "")
+        if metric_counts.get(metric_id) != 1:
+            raise CCACWatchdogError("FinOps Lite provider daily metrics must be unique")
+        provider_value, provider_day = validated_value(
+            metric_id, {"scope", "provider", "date"}, daily=True
+        )
+        assert provider_day is not None
+        if provider_day in seen_provider_days:
+            raise CCACWatchdogError("FinOps Lite provider daily metrics must be unique")
+        seen_provider_days.add(provider_day)
+        if (
+            provider_day not in daily_by_date
+            or abs(provider_value - daily_by_date[provider_day]) > tolerance
+        ):
+            raise CCACWatchdogError(
+                "FinOps Lite provider daily total does not reconcile to service metrics"
+            )
+
+    calculated_difference = actual_service_sum - value
+    if (
+        abs(total - value) > tolerance
+        or abs(daily_sum - actual_daily_sum) > tolerance
+        or abs(service_sum - actual_service_sum) > tolerance
+        or abs(actual_daily_sum - value) > tolerance
+        or abs(actual_service_sum - value) > tolerance
+        or abs(difference - calculated_difference) > tolerance
+    ):
+        raise CCACWatchdogError("FinOps Lite daily-series reconciliation failed")
 
 
 def extract_daily_observations(

@@ -50,6 +50,25 @@ def _build_1_1(source: dict | None = None, **kwargs) -> dict:
     )
 
 
+def _metric(source: dict, metric_id: str) -> dict:
+    return next(metric for metric in source["metrics"] if metric["id"] == metric_id)
+
+
+def _synthetic_real_source() -> dict:
+    source = illustrative_input("1.1.0")
+    source["mode"] = "real"
+    source["inputs"][0]["access"] = "external_read_only"
+    source["inputs"][0]["data_classification"] = "customer_confidential"
+    source["inputs"][0]["source_type"] = "aws_cost_explorer_api"
+    source["extensions"]["finops_lite"].pop("illustrative_cloud_sources")
+    source["extensions"]["finops_lite"].pop("illustrative_cost_basis")
+    source["extensions"]["finops_lite"].pop("aws_api_queried")
+    source["extensions"]["finops_lite"].update(
+        {"aws_cost_metric": "NetUnblendedCost", "aws_filter": None}
+    )
+    return source
+
+
 def test_default_and_explicit_1_0_are_byte_identical_with_legacy_provenance():
     runner = CliRunner()
     default = runner.invoke(cli, ["ccac", "--demo"])
@@ -163,6 +182,32 @@ def test_expected_run_id_and_mode_mismatches_fail_closed():
     )
     assert result["run_id"] == source["run_id"]
     assert result["mode"] == source["mode"]
+
+
+def test_authentic_synthetic_real_finops_lite_source_is_accepted_without_aws():
+    result = _build_1_1(_synthetic_real_source(), expected_mode="real")
+    assert result["mode"] == "real"
+    assert result["inputs"][0]["access"] == "local_read_only"
+    assert result["inputs"][0]["data_classification"] == "customer_confidential"
+
+
+@pytest.mark.parametrize(
+    "mode,access,classification",
+    [
+        ("real", "local_read_only", "customer_confidential"),
+        ("real", "external_read_only", "public_illustrative"),
+        ("illustrative", "external_read_only", "public_illustrative"),
+        ("illustrative", "illustrative_fixture", "customer_confidential"),
+    ],
+)
+def test_source_access_and_classification_combinations_fail_closed(
+    mode: str, access: str, classification: str
+):
+    source = _synthetic_real_source() if mode == "real" else illustrative_input("1.1.0")
+    source["inputs"][0]["access"] = access
+    source["inputs"][0]["data_classification"] = classification
+    with pytest.raises(CCACWatchdogError, match="source access metadata"):
+        _build_1_1(source)
 
 
 @pytest.mark.parametrize(
@@ -290,5 +335,100 @@ def test_daily_series_reconciliation_remains_fail_closed(field: str):
 def test_daily_service_inventory_must_match_actual_metrics():
     source = illustrative_input("1.1.0")
     source["extensions"]["finops_lite"]["daily_service_metric_ids"].pop()
+    with pytest.raises(CCACWatchdogError, match="inventory does not reconcile"):
+        _build_1_1(source)
+
+
+@pytest.mark.parametrize("value", [0.02, -0.01, "NaN", "Infinity"])
+def test_reconciliation_tolerance_is_bounded(value):
+    source = illustrative_input("1.1.0")
+    source["extensions"]["finops_lite"]["reconciliation"]["tolerance"] = value
+    with pytest.raises(CCACWatchdogError, match="reconciliation"):
+        _build_1_1(source)
+
+
+@pytest.mark.parametrize("value", [None, 0, -0.01, "NaN", "Infinity"])
+def test_currency_minor_unit_must_be_finite_and_positive(value):
+    source = illustrative_input("1.1.0")
+    scope = _metric(source, "metric.tech-spend.scope.cloud")
+    scope["accounting_boundary"]["currency_minor_unit"] = value
+    with pytest.raises(CCACWatchdogError, match="currency minor unit"):
+        _build_1_1(source)
+
+
+@pytest.mark.parametrize(
+    "metric_id",
+    [
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-01.cost",
+        "metric.cloud.service.amazonec2-23d867e0.cost",
+        "metric.cloud.day.2026-07-01.cost",
+    ],
+)
+def test_actual_metric_tampering_fails_independent_reconciliation(metric_id: str):
+    source = illustrative_input("1.1.0")
+    _metric(source, metric_id)["value"] += 1
+    with pytest.raises(CCACWatchdogError, match="reconcil"):
+        _build_1_1(source)
+
+
+@pytest.mark.parametrize("field", ["daily_sum", "service_sum", "total"])
+def test_declared_sums_must_match_actual_metrics(field: str):
+    source = illustrative_input("1.1.0")
+    source["extensions"]["finops_lite"]["reconciliation"][field] += 1
+    with pytest.raises(CCACWatchdogError, match="daily-series reconciliation"):
+        _build_1_1(source)
+
+
+def test_declared_difference_must_match_independent_calculation():
+    source = illustrative_input("1.1.0")
+    source["extensions"]["finops_lite"]["reconciliation"]["difference"] = 0.02
+    with pytest.raises(CCACWatchdogError, match="daily-series reconciliation"):
+        _build_1_1(source)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "missing",
+        "duplicate",
+        "extra",
+        "mislabeled",
+        "out_of_period",
+        "currency",
+        "negative",
+        "non_finite",
+    ],
+)
+def test_daily_service_inventory_and_metric_semantics_fail_closed(mutation: str):
+    source = illustrative_input("1.1.0")
+    inventory = source["extensions"]["finops_lite"]["daily_service_metric_ids"]
+    metric = _metric(source, inventory[0])
+    if mutation == "missing":
+        inventory.pop()
+    elif mutation == "duplicate":
+        inventory.append(inventory[0])
+    elif mutation == "extra":
+        extra = copy.deepcopy(metric)
+        extra["id"] = "metric.cloud.service.extra.day.2026-07-01.cost"
+        extra["dimensions"]["service"] = "Extra"
+        source["metrics"].append(extra)
+    elif mutation == "mislabeled":
+        metric["basis"] = "calculated"
+    elif mutation == "out_of_period":
+        metric["period"]["start"] = "2026-06-30"
+    elif mutation == "currency":
+        metric["currency"] = "EUR"
+    elif mutation == "negative":
+        metric["value"] = -1
+    else:
+        metric["value"] = "NaN"
+    with pytest.raises(CCACWatchdogError):
+        _build_1_1(source)
+
+
+def test_service_inventory_requires_unique_exact_metric_identity():
+    source = illustrative_input("1.1.0")
+    inventory = source["extensions"]["finops_lite"]["service_metric_ids"]
+    source["metrics"].append(copy.deepcopy(_metric(source, inventory[0])))
     with pytest.raises(CCACWatchdogError, match="inventory does not reconcile"):
         _build_1_1(source)

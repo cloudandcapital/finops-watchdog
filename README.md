@@ -144,7 +144,7 @@ The test suite covers legacy behavior, deterministic CCAC output, schema validat
 The verified connection in this phase is:
 
 ```text
-FinOps Lite CCAC tool_result -> FinOps Watchdog CCAC tool_result -> Tech Spend Command Center trusted_report
+FinOps Lite CCAC tool_result -> FinOps Watchdog CCAC tool_result
 ```
 
 The complete illustrative acceptance run passes independent CCAC validation. Cloud Cost Guard remains unchanged until its downstream adapter is reviewed separately.
@@ -154,7 +154,7 @@ The complete illustrative acceptance run passes independent CCAC validation. Clo
 | FinOps Lite | `0.3.0` for CCAC 1.0; `0.4.0` for CCAC 1.0 and 1.1 |
 | FinOps Watchdog | `0.5.x` |
 | CCAC | `ccac/1.0.0`, `ccac/1.1.0` (CCAC package 0.2.0) |
-| Tech Spend Command Center | `0.2.x` |
+| Tech Spend Command Center | `0.2.x` consumes the existing CCAC 1.0 pipeline; CCAC 1.1 integration is pending a separate Command Center phase |
 
 ## License
 
