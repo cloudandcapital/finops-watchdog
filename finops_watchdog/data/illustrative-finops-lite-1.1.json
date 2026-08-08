@@ -1,0 +1,1991 @@
+{
+  "contract": "ccac/1.1.0",
+  "document_type": "tool_result",
+  "evidence": [
+    {
+      "content_sha256": "c33e467b36277c646d357d56bca9fd5cd8216da8fbe5a8ecae9140cbe04645c3",
+      "description": "Deterministic illustrative net-cost summary modeled for the public scenario; no account or AWS API was queried.",
+      "id": "evidence.finops-lite.cost-summary",
+      "kind": "source_query",
+      "locator": "canonical-json:summary",
+      "observed_at": "2026-08-04T12:00:00Z",
+      "source_ids": [
+        "source.finops-lite.finops-lite-demo-summary-d8256e9f"
+      ]
+    }
+  ],
+  "extensions": {
+    "finops_lite": {
+      "aws_api_queried": false,
+      "contract_period_end_semantics": "exclusive",
+      "daily_service_metric_ids": [
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-01.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-01.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-02.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-02.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-03.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-03.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-04.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-04.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-05.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-05.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-06.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-06.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-07.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-07.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-08.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-08.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-09.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-09.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-10.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-10.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-11.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-11.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-12.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-12.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-13.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-13.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-14.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-14.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-15.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-15.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-16.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-16.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-17.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-17.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-18.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-18.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-19.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-19.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-20.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-20.cost",
+        "metric.cloud.service.amazonec2-23d867e0.day.2026-07-21.cost",
+        "metric.cloud.service.amazons3-c600b2aa.day.2026-07-21.cost"
+      ],
+      "group_by": "SERVICE",
+      "illustrative_cloud_sources": [
+        "aws"
+      ],
+      "illustrative_cost_basis": "net_cost",
+      "reconciliation": {
+        "daily_sum": 2194.0,
+        "difference": 0.0,
+        "service_sum": 2194.0,
+        "status": "passed",
+        "tolerance": 0.01,
+        "total": 2194.0
+      },
+      "service_metric_ids": [
+        "metric.cloud.service.amazonec2-23d867e0.cost",
+        "metric.cloud.service.amazons3-c600b2aa.cost"
+      ],
+      "source_window_end_semantics": "inclusive"
+    }
+  },
+  "findings": [],
+  "generated_at": "2026-08-04T12:00:00Z",
+  "inputs": [
+    {
+      "access": "illustrative_fixture",
+      "adapter_version": "0.4.0",
+      "content_sha256": "c33e467b36277c646d357d56bca9fd5cd8216da8fbe5a8ecae9140cbe04645c3",
+      "data_classification": "public_illustrative",
+      "id": "source.finops-lite.finops-lite-demo-summary-d8256e9f",
+      "lossy_mapping": true,
+      "mapping_notes": [
+        "Deterministic illustrative net-cost summary modeled for the public scenario; no account or AWS API was queried.",
+        "Service-level illustrative summary; not an AWS query or resource-level billing export.",
+        "Illustrative AWS is the sole Cloud billing source for this scenario."
+      ],
+      "source_type": "finops_lite_demo_summary",
+      "source_version": "1.0.0"
+    }
+  ],
+  "metrics": [
+    {
+      "accounting_boundary": {
+        "allocation_of_metric_id": null,
+        "canonical_owner": "finops-lite",
+        "component_treatments": {
+          "adjustments": "included",
+          "credits": "included",
+          "shared_services": "included",
+          "taxes": "included"
+        },
+        "cost_basis": "net_cost",
+        "coverage": "complete",
+        "cross_scope_treatments": {
+          "direct_ai_vendor": "excluded",
+          "provider_billed_ai": "included"
+        },
+        "currency_minor_unit": 0.01,
+        "eligibility_reason": "The deterministic public scenario declares net_cost and AWS as its sole illustrative Cloud source; no account or AWS API was queried.",
+        "exclusion_rules": [
+          "Direct AI-vendor billing and SaaS invoice or entitlement charges outside cloud-provider billing."
+        ],
+        "inclusion_rules": [
+          "Cloud-provider-billed services, including provider-billed native AI, present in the authoritative source summary.",
+          "The illustrative scenario follows Cloud & Capital's technology-spend boundary policy without asserting that an AWS API returned any charge type."
+        ],
+        "overlap": {
+          "disposition": "resolved",
+          "treatment": "Provider-billed native AI remains in Cloud; direct AI-vendor and SaaS billing channels are excluded."
+        },
+        "relationship": "canonical_scope_spend",
+        "scope": "cloud",
+        "source_channel": "cloud_provider_billing",
+        "total_eligible": true
+      },
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.tech-spend.scope.cloud",
+      "input_metric_ids": [],
+      "name": "Cloud cost",
+      "period": {
+        "end": "2026-07-22",
+        "start": "2026-07-01",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 2194.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "comparison": "previous_equal_length_period",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.previous-total",
+      "input_metric_ids": [],
+      "name": "Previous cloud cost",
+      "period": {
+        "end": "2026-07-01",
+        "start": "2026-06-10",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 2000.0
+    },
+    {
+      "additivity": "non_additive",
+      "basis": "calculated",
+      "currency": "USD",
+      "dimensions": {
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": "metric.tech-spend.scope.cloud - metric.cloud.previous-total",
+      "id": "metric.cloud.change-amount",
+      "input_metric_ids": [
+        "metric.tech-spend.scope.cloud",
+        "metric.cloud.previous-total"
+      ],
+      "name": "Cloud cost change amount",
+      "period": {
+        "end": "2026-07-22",
+        "start": "2026-07-01",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 194.0
+    },
+    {
+      "additivity": "ratio",
+      "basis": "calculated",
+      "currency": null,
+      "dimensions": {
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": "(metric.tech-spend.scope.cloud - metric.cloud.previous-total) / metric.cloud.previous-total * 100",
+      "id": "metric.cloud.change-percentage",
+      "input_metric_ids": [
+        "metric.tech-spend.scope.cloud",
+        "metric.cloud.previous-total"
+      ],
+      "name": "Cloud cost change percentage",
+      "period": {
+        "end": "2026-07-22",
+        "start": "2026-07-01",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "percent",
+      "unknown_reason": null,
+      "value": 9.7
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost",
+      "period": {
+        "end": "2026-07-22",
+        "start": "2026-07-01",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 1535.8
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost",
+      "period": {
+        "end": "2026-07-22",
+        "start": "2026-07-01",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 658.2
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-01",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-01.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-01",
+      "period": {
+        "end": "2026-07-02",
+        "start": "2026-07-01",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 100.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-02",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-02.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-02",
+      "period": {
+        "end": "2026-07-03",
+        "start": "2026-07-02",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 101.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-03",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-03.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-03",
+      "period": {
+        "end": "2026-07-04",
+        "start": "2026-07-03",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 102.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-04",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-04.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-04",
+      "period": {
+        "end": "2026-07-05",
+        "start": "2026-07-04",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 100.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-05",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-05.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-05",
+      "period": {
+        "end": "2026-07-06",
+        "start": "2026-07-05",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 101.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-06",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-06.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-06",
+      "period": {
+        "end": "2026-07-07",
+        "start": "2026-07-06",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 102.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-07",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-07.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-07",
+      "period": {
+        "end": "2026-07-08",
+        "start": "2026-07-07",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 100.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-08",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-08.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-08",
+      "period": {
+        "end": "2026-07-09",
+        "start": "2026-07-08",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 101.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-09",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-09.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-09",
+      "period": {
+        "end": "2026-07-10",
+        "start": "2026-07-09",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 102.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-10",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-10.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-10",
+      "period": {
+        "end": "2026-07-11",
+        "start": "2026-07-10",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 100.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-11",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-11.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-11",
+      "period": {
+        "end": "2026-07-12",
+        "start": "2026-07-11",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 101.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-12",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-12.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-12",
+      "period": {
+        "end": "2026-07-13",
+        "start": "2026-07-12",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 102.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-13",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-13.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-13",
+      "period": {
+        "end": "2026-07-14",
+        "start": "2026-07-13",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 100.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-14",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-14.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-14",
+      "period": {
+        "end": "2026-07-15",
+        "start": "2026-07-14",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 101.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-15",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-15.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-15",
+      "period": {
+        "end": "2026-07-16",
+        "start": "2026-07-15",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 102.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-16",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-16.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-16",
+      "period": {
+        "end": "2026-07-17",
+        "start": "2026-07-16",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 100.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-17",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-17.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-17",
+      "period": {
+        "end": "2026-07-18",
+        "start": "2026-07-17",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 101.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-18",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-18.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-18",
+      "period": {
+        "end": "2026-07-19",
+        "start": "2026-07-18",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 102.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-19",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-19.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-19",
+      "period": {
+        "end": "2026-07-20",
+        "start": "2026-07-19",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 100.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-20",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-20.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-20",
+      "period": {
+        "end": "2026-07-21",
+        "start": "2026-07-20",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 101.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-21",
+        "provider": "aws",
+        "scope": "cloud"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.day.2026-07-21.cost",
+      "input_metric_ids": [],
+      "name": "Cloud cost for 2026-07-21",
+      "period": {
+        "end": "2026-07-22",
+        "start": "2026-07-21",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 175.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-01",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-01.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-01",
+      "period": {
+        "end": "2026-07-02",
+        "start": "2026-07-01",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-01",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-01.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-01",
+      "period": {
+        "end": "2026-07-02",
+        "start": "2026-07-01",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-02",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-02.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-02",
+      "period": {
+        "end": "2026-07-03",
+        "start": "2026-07-02",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.7
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-02",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-02.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-02",
+      "period": {
+        "end": "2026-07-03",
+        "start": "2026-07-02",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.3
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-03",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-03.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-03",
+      "period": {
+        "end": "2026-07-04",
+        "start": "2026-07-03",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 71.4
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-03",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-03.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-03",
+      "period": {
+        "end": "2026-07-04",
+        "start": "2026-07-03",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.6
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-04",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-04.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-04",
+      "period": {
+        "end": "2026-07-05",
+        "start": "2026-07-04",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-04",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-04.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-04",
+      "period": {
+        "end": "2026-07-05",
+        "start": "2026-07-04",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-05",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-05.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-05",
+      "period": {
+        "end": "2026-07-06",
+        "start": "2026-07-05",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.7
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-05",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-05.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-05",
+      "period": {
+        "end": "2026-07-06",
+        "start": "2026-07-05",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.3
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-06",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-06.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-06",
+      "period": {
+        "end": "2026-07-07",
+        "start": "2026-07-06",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 71.4
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-06",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-06.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-06",
+      "period": {
+        "end": "2026-07-07",
+        "start": "2026-07-06",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.6
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-07",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-07.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-07",
+      "period": {
+        "end": "2026-07-08",
+        "start": "2026-07-07",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-07",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-07.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-07",
+      "period": {
+        "end": "2026-07-08",
+        "start": "2026-07-07",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-08",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-08.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-08",
+      "period": {
+        "end": "2026-07-09",
+        "start": "2026-07-08",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.7
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-08",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-08.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-08",
+      "period": {
+        "end": "2026-07-09",
+        "start": "2026-07-08",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.3
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-09",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-09.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-09",
+      "period": {
+        "end": "2026-07-10",
+        "start": "2026-07-09",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 71.4
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-09",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-09.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-09",
+      "period": {
+        "end": "2026-07-10",
+        "start": "2026-07-09",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.6
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-10",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-10.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-10",
+      "period": {
+        "end": "2026-07-11",
+        "start": "2026-07-10",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-10",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-10.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-10",
+      "period": {
+        "end": "2026-07-11",
+        "start": "2026-07-10",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-11",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-11.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-11",
+      "period": {
+        "end": "2026-07-12",
+        "start": "2026-07-11",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.7
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-11",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-11.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-11",
+      "period": {
+        "end": "2026-07-12",
+        "start": "2026-07-11",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.3
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-12",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-12.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-12",
+      "period": {
+        "end": "2026-07-13",
+        "start": "2026-07-12",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 71.4
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-12",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-12.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-12",
+      "period": {
+        "end": "2026-07-13",
+        "start": "2026-07-12",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.6
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-13",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-13.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-13",
+      "period": {
+        "end": "2026-07-14",
+        "start": "2026-07-13",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-13",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-13.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-13",
+      "period": {
+        "end": "2026-07-14",
+        "start": "2026-07-13",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-14",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-14.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-14",
+      "period": {
+        "end": "2026-07-15",
+        "start": "2026-07-14",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.7
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-14",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-14.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-14",
+      "period": {
+        "end": "2026-07-15",
+        "start": "2026-07-14",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.3
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-15",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-15.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-15",
+      "period": {
+        "end": "2026-07-16",
+        "start": "2026-07-15",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 71.4
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-15",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-15.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-15",
+      "period": {
+        "end": "2026-07-16",
+        "start": "2026-07-15",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.6
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-16",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-16.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-16",
+      "period": {
+        "end": "2026-07-17",
+        "start": "2026-07-16",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-16",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-16.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-16",
+      "period": {
+        "end": "2026-07-17",
+        "start": "2026-07-16",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-17",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-17.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-17",
+      "period": {
+        "end": "2026-07-18",
+        "start": "2026-07-17",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.7
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-17",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-17.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-17",
+      "period": {
+        "end": "2026-07-18",
+        "start": "2026-07-17",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.3
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-18",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-18.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-18",
+      "period": {
+        "end": "2026-07-19",
+        "start": "2026-07-18",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 71.4
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-18",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-18.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-18",
+      "period": {
+        "end": "2026-07-19",
+        "start": "2026-07-18",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.6
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-19",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-19.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-19",
+      "period": {
+        "end": "2026-07-20",
+        "start": "2026-07-19",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-19",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-19.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-19",
+      "period": {
+        "end": "2026-07-20",
+        "start": "2026-07-19",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.0
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-20",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-20.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-20",
+      "period": {
+        "end": "2026-07-21",
+        "start": "2026-07-20",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 70.7
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-20",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-20.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-20",
+      "period": {
+        "end": "2026-07-21",
+        "start": "2026-07-20",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 30.3
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-21",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonEC2"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazonec2-23d867e0.day.2026-07-21.cost",
+      "input_metric_ids": [],
+      "name": "AmazonEC2 cost for 2026-07-21",
+      "period": {
+        "end": "2026-07-22",
+        "start": "2026-07-21",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 122.5
+    },
+    {
+      "additivity": "additive",
+      "basis": "observed",
+      "currency": "USD",
+      "dimensions": {
+        "date": "2026-07-21",
+        "provider": "aws",
+        "scope": "cloud",
+        "service": "AmazonS3"
+      },
+      "evidence_ids": [
+        "evidence.finops-lite.cost-summary"
+      ],
+      "formula": null,
+      "id": "metric.cloud.service.amazons3-c600b2aa.day.2026-07-21.cost",
+      "input_metric_ids": [],
+      "name": "AmazonS3 cost for 2026-07-21",
+      "period": {
+        "end": "2026-07-22",
+        "start": "2026-07-21",
+        "timezone": "UTC"
+      },
+      "quality_status": "valid",
+      "unit": "currency",
+      "unknown_reason": null,
+      "value": 52.5
+    }
+  ],
+  "mode": "illustrative",
+  "opportunities": [],
+  "period": {
+    "end": "2026-07-22",
+    "start": "2026-07-01",
+    "timezone": "UTC"
+  },
+  "producer": {
+    "name": "finops-lite",
+    "version": "0.4.0"
+  },
+  "quality": {
+    "issues": [],
+    "status": "valid"
+  },
+  "run_id": "123e4567-e89b-12d3-a456-426614174000"
+}

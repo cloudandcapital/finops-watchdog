@@ -6,6 +6,14 @@ All notable changes to FinOps Watchdog are documented here.
 
 - Add a standard `finops-watchdog --version` installation smoke check.
 
+## [0.5.0] — Unreleased
+
+- Add explicit, fail-closed CCAC 1.1 input/output selection for FinOps Lite 0.4.0.
+- Package the byte-exact deterministic FinOps Lite 1.1 illustrative artifact from commit `d72649ec07aa57c60a7ea3f8ff2890b8d95c4b93`.
+- Preserve the exact bundled CCAC 1.0 output and its 0.4.0 provenance while reporting 0.5.0 truthfully for custom and real runs.
+- Keep Watchdog output diagnostic-only: no canonical technology-spend scope or all-in total is copied or emitted.
+- Enforce contract, producer-version, run, mode, source/evidence, period, currency, and daily-series reconciliation integrity.
+
 ## [0.4.0] — Unreleased
 
 Version 0.4.0 is the first release of the CCAC pipeline implementation. The

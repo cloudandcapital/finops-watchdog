@@ -1,6 +1,6 @@
 # FinOps Watchdog
 
-FinOps Watchdog detects financially material increases in daily cloud cost. Version 0.4 is the first release of the canonical Cloud & Capital Analysis Contract (CCAC) implementation used by the six-tool pipeline. The original explicitly mapped CSV command remains available for compatibility.
+FinOps Watchdog detects financially material increases in daily cloud cost. Version 0.5 preserves the released CCAC 1.0 behavior and adds an explicit CCAC 1.1 anomaly-compatibility path. The original explicitly mapped CSV command remains available for compatibility.
 
 For the complete six-tool demo and roadmap, see [Tech Spend Command Center](https://github.com/cloudandcapital/tech-spend-command-center).
 
@@ -8,7 +8,8 @@ This repository does **not** mutate cloud resources, estimate savings, verify sa
 
 ## What works today
 
-- `watchdog ccac` consumes a `ccac/1.0.0` `tool_result` from FinOps Lite.
+- `watchdog ccac` defaults to the byte-compatible `ccac/1.0.0` path and accepts explicit `--contract-version 1.0.0` or `--contract-version 1.1.0` selection.
+- The 1.1 path consumes and emits `ccac/1.1.0` without copying FinOps Lite's canonical Cloud scope into Watchdog output.
 - It reads observed, additive, one-day currency metrics and preserves their declared dimensions.
 - When reconciled daily service series are present, it analyzes those series and suppresses the overlapping provider-total series to prevent duplicate findings and downstream double-counting.
 - It calculates a trailing median, median absolute deviation (MAD), robust score, observed excess cost, and percentage change.
@@ -18,7 +19,7 @@ This repository does **not** mutate cloud resources, estimate savings, verify sa
 - Output is a versioned CCAC `tool_result` with source hash, run identity, evidence, metrics, and lifecycle-ready findings.
 - `watchdog detect` still supports arbitrary local CSV files when column mappings are provided explicitly.
 
-Compatible FinOps Lite `0.3.x` releases emit reconciled daily AWS service metrics and provider totals. Watchdog analyzes the service series and suppresses the overlapping provider parent, producing service-attributed findings without counting the same spike twice. It preserves other dimensions when an upstream producer supplies them; it never infers dimensions from period totals.
+Compatible FinOps Lite `0.3.0` and `0.4.0` inputs emit reconciled daily AWS service metrics and provider totals. CCAC 1.1 requires FinOps Lite `0.4.0`. Watchdog analyzes the service series and suppresses the overlapping provider parent, producing service-attributed findings without counting the same spike twice. It preserves other dimensions when an upstream producer supplies them; it never infers dimensions from period totals.
 
 The public demo is credential-free and uses entirely illustrative data.
 
@@ -43,6 +44,7 @@ Run the deterministic public example:
 
 ```bash
 watchdog ccac --demo --output watchdog-result.json
+watchdog ccac --demo --contract-version 1.1.0 --output watchdog-result-1.1.json
 ```
 
 The command writes `watchdog-result.json`; rerunning with the same path
@@ -53,11 +55,13 @@ replaces that explicitly named local file.
 Consume a FinOps Lite result:
 
 ```bash
-finops ccac --start 2026-07-01 --end 2026-07-31 --output finops-lite.json
-watchdog ccac --input finops-lite.json --output watchdog.json
+finops ccac --start 2026-07-01 --end 2026-07-21 --contract-version 1.1.0 --output finops-lite.json
+watchdog ccac --input finops-lite.json --contract-version 1.1.0 --output watchdog.json
 ```
 
-The acceptance suite validates this output against the shared CCAC reference schemas. Contributors may additionally run `ccac validate watchdog.json` after installing the separate CCAC reference package.
+Input and output contracts must match exactly; Watchdog never infers, upgrades, downgrades, or translates a contract. The acceptance suite validates output against the released CCAC 0.2.0 reference package. The packaged 1.1 demonstration is the byte-exact deterministic FinOps Lite artifact generated from commit `d72649ec07aa57c60a7ea3f8ff2890b8d95c4b93`, SHA-256 `ae40d79949a0f6abccaf0f810e602eae8649b02c9a1379af405af2a1fc97b3ac`.
+
+Watchdog 1.1 emits anomaly diagnostics and findings only. It does not own or repeat `metric.tech-spend.scope.cloud`, emit another canonical technology-spend scope, or advertise an all-in technology-spend total. Real and custom inputs remain read-only, partial in organizational coverage, and ineligible for an all-in total.
 
 The real FinOps Lite command reads AWS Cost Explorer through read-only API calls. The public `--demo` path uses clearly illustrative local data and no cloud credentials.
 
@@ -140,17 +144,17 @@ The test suite covers legacy behavior, deterministic CCAC output, schema validat
 The verified connection in this phase is:
 
 ```text
-FinOps Lite CCAC tool_result -> FinOps Watchdog CCAC tool_result -> Tech Spend Command Center trusted_report
+FinOps Lite CCAC tool_result -> FinOps Watchdog CCAC tool_result
 ```
 
 The complete illustrative acceptance run passes independent CCAC validation. Cloud Cost Guard remains unchanged until its downstream adapter is reviewed separately.
 
 | Component | Compatible version |
 |---|---|
-| FinOps Lite | `0.3.x` |
-| FinOps Watchdog | `0.4.x` |
-| CCAC | `ccac/1.0.0` |
-| Tech Spend Command Center | `0.2.x` |
+| FinOps Lite | `0.3.0` for CCAC 1.0; `0.4.0` for CCAC 1.0 and 1.1 |
+| FinOps Watchdog | `0.5.x` |
+| CCAC | `ccac/1.0.0`, `ccac/1.1.0` (CCAC package 0.2.0) |
+| Tech Spend Command Center | `0.2.x` consumes the existing CCAC 1.0 pipeline; CCAC 1.1 integration is pending a separate Command Center phase |
 
 ## License
 
