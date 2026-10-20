@@ -110,6 +110,13 @@ def _timestamp(value: str | datetime | None) -> str:
 
 
 def _canonical(value: Mapping[str, Any]) -> bytes:
+    if (
+        value.get("extensions", {}).get("finops_lite", {}).get("input_profile")
+        == "billing_csv/1.0"
+    ):
+        from finops_lite.ccac_json import dumps_exact
+
+        return dumps_exact(value).encode("utf-8")
     return json.dumps(
         value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
     ).encode()
@@ -191,6 +198,14 @@ def _validate_envelope(
 
 
 def _validate_1_1_lineage(payload: Mapping[str, Any]) -> None:
+    if (
+        payload.get("extensions", {}).get("finops_lite", {}).get("input_profile")
+        == "billing_csv/1.0"
+    ):
+        from .billing import validate_billing_lineage
+
+        validate_billing_lineage(payload)
+        return
     inputs = payload.get("inputs")
     evidence = payload.get("evidence")
     if not isinstance(inputs, list) or not inputs:

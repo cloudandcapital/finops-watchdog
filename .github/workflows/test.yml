@@ -48,7 +48,7 @@ jobs:
       - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
-      - run: uv sync --locked --extra dev
+      - run: uv sync --locked --extra dev --extra billing
       - name: Install verified CCAC 0.2.0 release validator
         run: |
           curl --fail --location --silent --show-error --output /tmp/cloudandcapital_ccac-0.2.0-py3-none-any.whl https://github.com/cloudandcapital/cloud-capital-analysis-contract/releases/download/v0.2.0/cloudandcapital_ccac-0.2.0-py3-none-any.whl
