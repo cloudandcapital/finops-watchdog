@@ -159,3 +159,7 @@ The complete illustrative acceptance run passes independent CCAC validation. Clo
 ## License
 
 MIT © 2025–2026 Diana Molski, Cloud & Capital
+
+### Supplied billing evidence (draft)
+
+The [billing input adapter](docs/billing-input.md) accepts FinOps Lite’s canonical billing profile and reuses the existing daily anomaly detector. Install the `billing` extra for the pinned integration dependencies. Missing daily evidence remains explicit.
