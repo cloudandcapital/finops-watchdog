@@ -1,11 +1,13 @@
 """The billing adapter must reuse the detector and reject invented observations."""
 
 from copy import deepcopy
-from decimal import Decimal
+from decimal import Decimal, getcontext
+from pathlib import Path
 
 import pytest
 from ccac import validate_document
 from finops_lite.billing import build_billing_result as bill
+from finops_lite.ccac_json import loads_exact
 
 from finops_watchdog.billing import build_billing_result, validate_billing_lineage
 from finops_watchdog.ccac import CCACWatchdogError
@@ -51,6 +53,29 @@ def test_short_history_is_unknown_rather_than_no_anomaly_assurance():
     assert diagnostic["anomalies_detected"] == 0
     assert len(diagnostic["insufficient_history_series"]) == 1
     assert result["quality"]["status"] == "partial"
+
+
+def test_eighteen_place_source_lineage_is_exact_without_changing_global_context():
+    # Invented canonical FinOps Lite output exercises the consumer independently
+    # of the installed producer adapter's accepted input precision.
+    payload = loads_exact(
+        (Path(__file__).parent / "fixtures/billing/precise-source.json").read_text()
+    )
+    precision = getcontext().prec
+    layout = validate_billing_lineage(payload)
+    assert layout["current"]["rows"][0]["cost"] == "999999999999.123456789012345678"
+    result = build_billing_result(payload, generated_at=IDENTITY["generated_at"])
+    assert result["extensions"]["finops_watchdog"]["anomalies_detected"] == 0
+    assert getcontext().prec == precision
+    # A one-unit change at the eighteenth place must still fail lineage.
+    target = next(
+        item
+        for item in payload["metrics"]
+        if item["id"] == layout["daily_observation_metric_ids"][0]
+    )
+    target["value"] = Decimal("999999999999.123456789012345680")
+    with pytest.raises(CCACWatchdogError, match="differs from its source"):
+        validate_billing_lineage(payload)
 
 
 @pytest.mark.parametrize(

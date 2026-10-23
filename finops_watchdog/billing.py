@@ -10,12 +10,21 @@ from __future__ import annotations
 import hashlib
 from copy import deepcopy
 from datetime import date, datetime, timedelta
-from decimal import Decimal
+from decimal import Decimal, localcontext
 
 from . import __version__
 
 
 def validate_billing_lineage(payload):
+    # Match the billed-cost producer's exact arithmetic budget. The default
+    # Decimal context (28 digits) can round a large 18-place source amount.
+    # Keep this local so unrelated analyses retain their existing behavior.
+    with localcontext() as context:
+        context.prec = 50
+        return _validate_billing_lineage(payload)
+
+
+def _validate_billing_lineage(payload):
     from ccac import validate_document
 
     from .ccac import CCACWatchdogError
