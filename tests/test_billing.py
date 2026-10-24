@@ -52,7 +52,40 @@ def test_short_history_is_unknown_rather_than_no_anomaly_assurance():
     diagnostic = result["extensions"]["finops_watchdog"]
     assert diagnostic["anomalies_detected"] == 0
     assert len(diagnostic["insufficient_history_series"]) == 1
+    assert diagnostic["series_evaluated"] == 0
+    assert diagnostic["series_with_observations"] == 1
     assert result["quality"]["status"] == "partial"
+
+
+def test_earlier_correction_does_not_erase_a_current_period_spike():
+    from datetime import date, timedelta
+
+    header = "ChargePeriodStart,ChargePeriodEnd,ServiceName,BilledCost,BillingCurrency,BillingPeriodStart,BillingPeriodEnd,ChargeClass\n"
+    rows = [
+        f"{date(2026,9,d)},{date(2026,9,d)+timedelta(days=1)},EC2,{250 if d==25 else 100},USD,2026-09-01,2026-10-01,Usage"
+        for d in range(1, 31)
+    ]
+    rows.append("2026-08-20,2026-08-21,EC2,-10,USD,2026-09-01,2026-10-01,Correction")
+    payload = bill(
+        [{"name": "correction.csv", "text": header + "\n".join(rows)}], **IDENTITY
+    )
+    result = build_billing_result(payload, generated_at=IDENTITY["generated_at"])
+    diagnostic = result["extensions"]["finops_watchdog"]
+    assert diagnostic["series_evaluated"] == 1
+    assert diagnostic["anomalies_detected"] == 1
+    assert any(
+        item["dimensions"].get("date") == "2026-09-25" and item["value"] == 250
+        for item in result["metrics"]
+    )
+    assert validate_document(result) == []
+    tampered = deepcopy(payload)
+    daily = tampered["extensions"]["finops_lite"]["billing"][
+        "daily_observation_metric_ids"
+    ]
+    metric = next(item for item in tampered["metrics"] if item["id"] == daily[0])
+    metric["value"] -= Decimal("10")
+    with pytest.raises(CCACWatchdogError, match="differs from its source"):
+        validate_billing_lineage(tampered)
 
 
 def test_eighteen_place_source_lineage_is_exact_without_changing_global_context():

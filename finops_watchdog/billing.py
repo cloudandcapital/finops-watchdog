@@ -95,6 +95,21 @@ def _validate_billing_lineage(payload):
         eligible_by_series.setdefault(key, []).append(row)
     verified_ids = set()
     for key, records in eligible_by_series.items():
+        # Reconstruct the producer's in-window daily evidence independently.
+        # Late charges stay in bill totals, but cannot bridge a daily-series gap.
+        records = [
+            row
+            for row in records
+            if not (
+                row.get("billingStart")
+                and (
+                    datetime.fromisoformat(row["end"].replace("Z", "+00:00"))
+                    <= datetime.fromisoformat(row["billingStart"] + "T00:00:00+00:00")
+                    or datetime.fromisoformat(row["start"].replace("Z", "+00:00"))
+                    >= datetime.fromisoformat(row["billingEnd"] + "T00:00:00+00:00")
+                )
+            )
+        ]
         by_day = {}
         full_days = True
         for row in records:
@@ -112,7 +127,10 @@ def _validate_billing_lineage(payload):
             for a, b in zip(dates, dates[1:])
         )
         eligible = (
-            full_days and consecutive and all(value >= 0 for value in by_day.values())
+            bool(records)
+            and full_days
+            and consecutive
+            and all(value >= 0 for value in by_day.values())
         )
         matches = [
             item
@@ -241,6 +259,9 @@ def build_billing_result(payload, *, config=None, generated_at=None):
             ),
         )
     skipped = layout.get("excluded_daily_series", [])
+    diagnostic = result["extensions"]["finops_watchdog"]
+    diagnostic["series_with_observations"] = diagnostic["series_evaluated"]
+    diagnostic["series_evaluated"] -= len(diagnostic["insufficient_history_series"])
     result["extensions"]["finops_watchdog"]["excluded_daily_series"] = deepcopy(skipped)
     result["extensions"]["finops_watchdog"]["input_profile"] = "billing_csv/1.0"
     result["extensions"]["finops_watchdog"]["organizational_coverage"] = "partial"

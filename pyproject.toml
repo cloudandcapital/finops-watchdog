@@ -35,7 +35,7 @@ dependencies = [
 
 [project.optional-dependencies]
 billing = [
-    "finops-lite @ git+https://github.com/cloudandcapital/finops-lite.git@dcc2a6ddd0aa00b776eb9e5fb2e69618e0a64c1a",
+    "finops-lite @ git+https://github.com/cloudandcapital/finops-lite.git@ddbab6cd6cbff9a40edc310d935da4852657264a",
     "cloudandcapital-ccac @ https://github.com/cloudandcapital/cloud-capital-analysis-contract/releases/download/v0.2.0/cloudandcapital_ccac-0.2.0-py3-none-any.whl#sha256=bc46f363b1a03c94cf0da75759bccd0271de2c53b1f77a1a7255f9c8e7f768f1",
 ]
 dev = [

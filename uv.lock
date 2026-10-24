@@ -317,7 +317,7 @@ wheels = [
 [[package]]
 name = "finops-lite"
 version = "0.4.0"
-source = { git = "https://github.com/cloudandcapital/finops-lite.git?rev=dcc2a6ddd0aa00b776eb9e5fb2e69618e0a64c1a#dcc2a6ddd0aa00b776eb9e5fb2e69618e0a64c1a" }
+source = { git = "https://github.com/cloudandcapital/finops-lite.git?rev=ddbab6cd6cbff9a40edc310d935da4852657264a#ddbab6cd6cbff9a40edc310d935da4852657264a" }
 dependencies = [
     { name = "boto3" },
     { name = "botocore" },
@@ -363,7 +363,7 @@ requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=26,<27" },
     { name = "click", specifier = ">=8.1.7" },
     { name = "cloudandcapital-ccac", marker = "extra == 'billing'", url = "https://github.com/cloudandcapital/cloud-capital-analysis-contract/releases/download/v0.2.0/cloudandcapital_ccac-0.2.0-py3-none-any.whl" },
-    { name = "finops-lite", marker = "extra == 'billing'", git = "https://github.com/cloudandcapital/finops-lite.git?rev=dcc2a6ddd0aa00b776eb9e5fb2e69618e0a64c1a" },
+    { name = "finops-lite", marker = "extra == 'billing'", git = "https://github.com/cloudandcapital/finops-lite.git?rev=ddbab6cd6cbff9a40edc310d935da4852657264a" },
     { name = "flake8", marker = "extra == 'dev'", specifier = ">=7,<8" },
     { name = "isort", marker = "extra == 'dev'", specifier = ">=6,<7" },
     { name = "numpy", specifier = ">=1.24.0" },
