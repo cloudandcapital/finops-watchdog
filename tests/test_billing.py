@@ -75,8 +75,8 @@ def test_earlier_correction_does_not_erase_a_current_period_spike():
     assert diagnostic["anomalies_detected"] == 1
     finding = result["findings"][0]
     assert finding["title"] == "EC2 spending spike on Sep 25, 2026"
-    assert "cost 250 USD on Sep 25, 2026" in finding["description"]
-    assert "trailing daily median was 100 USD" in finding["description"]
+    assert "cost $250.00 on Sep 25, 2026" in finding["description"]
+    assert "trailing daily median was $100.00" in finding["description"]
     assert finding["first_observed_at"] == "2026-09-25T00:00:00Z"
     assert any(
         item["dimensions"].get("date") == "2026-09-25" and item["value"] == 250
