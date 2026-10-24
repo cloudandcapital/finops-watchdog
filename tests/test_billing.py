@@ -41,7 +41,7 @@ def test_existing_median_mad_detector_finds_invented_spike():
     assert diagnostic["window_days"] == 14 and diagnostic["anomalies_detected"] == 1
     assert len(result["findings"]) == 1
     assert (
-        "not a savings estimate or root-cause claim"
+        "not a savings estimate or a proven cause"
         in result["findings"][0]["description"]
     )
     assert validate_document(result) == []
@@ -73,6 +73,11 @@ def test_earlier_correction_does_not_erase_a_current_period_spike():
     diagnostic = result["extensions"]["finops_watchdog"]
     assert diagnostic["series_evaluated"] == 1
     assert diagnostic["anomalies_detected"] == 1
+    finding = result["findings"][0]
+    assert finding["title"] == "EC2 spending spike on Sep 25, 2026"
+    assert "cost 250 USD on Sep 25, 2026" in finding["description"]
+    assert "trailing daily median was 100 USD" in finding["description"]
+    assert finding["first_observed_at"] == "2026-09-25T00:00:00Z"
     assert any(
         item["dimensions"].get("date") == "2026-09-25" and item["value"] == 250
         for item in result["metrics"]

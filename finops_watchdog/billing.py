@@ -1,7 +1,7 @@
 """Read-only compatibility for FinOps Lite's signed billed-cost CSV profile.
 
-The existing median/MAD detector, thresholds, severity and finding renderer are
-reused unchanged. No month charge, missing date or negative day is synthesized
+The existing median/MAD detector, thresholds and severity are reused unchanged.
+Billing findings name the observed date in plain language. No month charge, missing date or negative day is synthesized
 into an observation. Invalid producer lineage fails instead of being omitted.
 """
 
@@ -179,6 +179,7 @@ def _validate_billing_lineage(payload):
 
 
 def build_billing_result(payload, *, config=None, generated_at=None):
+    from finops_lite.billing import text_decimal
     from finops_lite.ccac_json import dumps_exact
 
     from .ccac import DetectorConfig, _timestamp, build_result
@@ -257,6 +258,39 @@ def build_billing_result(payload, *, config=None, generated_at=None):
                     insufficient_history_series=[],
                 )
             ),
+        )
+    metrics = {item["id"]: item for item in result["metrics"]}
+
+    def number(item):
+        return text_decimal(Decimal(str(item["value"])))
+
+    for finding in result["findings"]:
+        own_metrics = [metrics[identifier] for identifier in finding["metric_ids"]]
+        observed = next(
+            item for item in own_metrics if item["id"].endswith(".observed")
+        )
+        expected = next(
+            item for item in own_metrics if item["id"].endswith(".expected")
+        )
+        impact = next(item for item in own_metrics if item["id"].endswith(".impact"))
+        dimensions = observed["dimensions"]
+        observed_day = date.fromisoformat(dimensions["date"])
+        date_label = (
+            f"{observed_day.strftime('%b')} {observed_day.day}, {observed_day.year}"
+        )
+        service = dimensions.get("service", "Cloud spending")
+        provider = dimensions.get("provider", "Not specified")
+        direction = (
+            "spike" if dimensions["anomaly_type"] == "spend_increase" else "drop"
+        )
+        currency = observed["currency"]
+        finding["title"] = f"{service} spending {direction} on {date_label}"
+        finding["description"] = (
+            f"{service} ({provider}) cost {number(observed)} {currency} on {date_label}. "
+            f"Its trailing daily median was {number(expected)} {currency}; "
+            f"the change from that baseline was {number(impact)} {currency}. "
+            "Check the charges for that day with the service owner. "
+            "This is an anomaly, not a savings estimate or a proven cause."
         )
     skipped = layout.get("excluded_daily_series", [])
     diagnostic = result["extensions"]["finops_watchdog"]
