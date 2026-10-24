@@ -163,3 +163,7 @@ MIT © 2025–2026 Diana Molski, Cloud & Capital
 ### Supplied billing evidence (draft)
 
 The [billing input adapter](docs/billing-input.md) accepts FinOps Lite’s canonical billing profile and reuses the existing daily anomaly detector. Install the `billing` extra for the pinned integration dependencies. Missing daily evidence remains explicit.
+
+### Billing audit recheck
+
+Billing daily-series checks use only records within their explicitly supplied billing window. Earlier corrections stay in the bill totals and evidence, while in-window gaps, partial days and negative daily sums remain ineligible. The consumer independently reconstructs that subset and rejects altered daily metrics. In billing output, `series_evaluated` counts series with enough history to run the detector; `series_with_observations` also includes short histories. The separate `insufficient_history_series` list explains what could not be tested. Generic CCAC detector thresholds and legacy output remain unchanged.
