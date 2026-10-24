@@ -124,7 +124,9 @@ def _canonical(value: Mapping[str, Any]) -> bytes:
 
 def _slug(value: str) -> str:
     clean = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-") or "all"
-    return f"{clean[:40]}-{hashlib.sha256(value.encode()).hexdigest()[:8]}"
+    # The cut can land on a separator even after the full name was stripped.
+    # CCAC identifiers cannot contain an empty component before the hash.
+    return f"{clean[:40].rstrip('-')}-{hashlib.sha256(value.encode()).hexdigest()[:8]}"
 
 
 def load_ccac(path: Path) -> dict[str, Any]:

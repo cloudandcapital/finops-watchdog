@@ -10,7 +10,7 @@ from __future__ import annotations
 import hashlib
 from copy import deepcopy
 from datetime import date, datetime, timedelta
-from decimal import Decimal, localcontext
+from decimal import ROUND_HALF_UP, Decimal, localcontext
 
 from . import __version__
 
@@ -179,7 +179,7 @@ def _validate_billing_lineage(payload):
 
 
 def build_billing_result(payload, *, config=None, generated_at=None):
-    from finops_lite.billing import text_decimal
+    from finops_lite.billing import CURRENCIES
     from finops_lite.ccac_json import dumps_exact
 
     from .ccac import DetectorConfig, _timestamp, build_result
@@ -261,8 +261,31 @@ def build_billing_result(payload, *, config=None, generated_at=None):
         )
     metrics = {item["id"]: item for item in result["metrics"]}
 
-    def number(item):
-        return text_decimal(Decimal(str(item["value"])))
+    def money(item):
+        # Display formatting only. Existing diagnostic values and source
+        # evidence stay unchanged; the generic detector owns their precision.
+        currency = item["currency"]
+        digits = CURRENCIES[currency]
+        prefix = {
+            "USD": "$",
+            "EUR": "€",
+            "GBP": "£",
+            "JPY": "¥",
+            "CNY": "CN¥",
+            "CAD": "CA$",
+            "AUD": "A$",
+            "NZD": "NZ$",
+            "HKD": "HK$",
+            "TWD": "NT$",
+            "KRW": "₩",
+            "INR": "₹",
+        }.get(currency, currency + "\u00a0")
+        with localcontext() as context:
+            context.prec = 50
+            value = Decimal(str(item["value"])).quantize(
+                Decimal(10) ** -digits, rounding=ROUND_HALF_UP
+            )
+        return f"{'-' if value < 0 else ''}{prefix}{abs(value):,.{digits}f}"
 
     for finding in result["findings"]:
         own_metrics = [metrics[identifier] for identifier in finding["metric_ids"]]
@@ -280,15 +303,15 @@ def build_billing_result(payload, *, config=None, generated_at=None):
         )
         service = dimensions.get("service", "Cloud spending")
         provider = dimensions.get("provider", "Not specified")
-        direction = (
-            "spike" if dimensions["anomaly_type"] == "spend_increase" else "drop"
-        )
-        currency = observed["currency"]
-        finding["title"] = f"{service} spending {direction} on {date_label}"
+        title = {
+            "spend_increase": f"{service} spending spike",
+            "new_spend": f"New {service} spending",
+        }.get(dimensions["anomaly_type"], f"{service} spending change")
+        finding["title"] = f"{title} on {date_label}"
         finding["description"] = (
-            f"{service} ({provider}) cost {number(observed)} {currency} on {date_label}. "
-            f"Its trailing daily median was {number(expected)} {currency}; "
-            f"the change from that baseline was {number(impact)} {currency}. "
+            f"{service} ({provider}) cost {money(observed)} on {date_label}. "
+            f"Its trailing daily median was {money(expected)}; "
+            f"the change from that baseline was {money(impact)}. "
             "Check the charges for that day with the service owner. "
             "This is an anomaly, not a savings estimate or a proven cause."
         )
