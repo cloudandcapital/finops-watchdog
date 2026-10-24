@@ -167,3 +167,5 @@ The [billing input adapter](docs/billing-input.md) accepts FinOps Lite’s canon
 ### Billing audit recheck
 
 Billing daily-series checks use only records within their explicitly supplied billing window. Earlier corrections stay in the bill totals and evidence, while in-window gaps, partial days and negative daily sums remain ineligible. The consumer independently reconstructs that subset and rejects altered daily metrics. In billing output, `series_evaluated` counts series with enough history to run the detector; `series_with_observations` also includes short histories. The separate `insufficient_history_series` list explains what could not be tested. Generic CCAC detector thresholds and legacy output remain unchanged.
+
+Billing findings name the observed day, service and provider, with the exact observed cost and trailing median. The plain-language description asks the service owner to check that day’s charges; the underlying metrics, severity and detector are unchanged.
