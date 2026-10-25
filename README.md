@@ -169,3 +169,8 @@ The [billing input adapter](docs/billing-input.md) accepts FinOps Lite’s canon
 Billing daily-series checks use only records within their explicitly supplied billing window. Earlier corrections stay in the bill totals and evidence, while in-window gaps, partial days and negative daily sums remain ineligible. The consumer independently reconstructs that subset and rejects altered daily metrics. In billing output, `series_evaluated` counts series with enough history to run the detector; `series_with_observations` also includes short histories. The separate `insufficient_history_series` list explains what could not be tested. Generic CCAC detector thresholds and legacy output remain unchanged.
 
 Billing findings name the observed day, service and provider. A zero baseline is explicitly new spending, never a drop. Amounts format the existing diagnostic values using currency precision; this does not change the generic detector’s existing metric rounding, severity or thresholds. The description asks the service owner to check that day’s charges. Truncated identifiers strip a trailing separator before their hash, so valid Amazon/Lambda and other service names remain schema-valid. Exact input amounts remain in the original billing evidence.
+
+
+### Development Python versions
+
+The tool and its tests support Python 3.10 and newer. Run dependency auditing with Python 3.11 or newer; the audit tooling is included in the development extra on those versions.
